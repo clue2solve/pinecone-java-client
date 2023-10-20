@@ -1,14 +1,21 @@
 package io.clue2solve.pinecone.javaclient;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.clue2solve.pinecone.javaclient.model.QueryResponse;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.json.JSONObject;
-import org.json.JSONArray;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class PineconeDBClient {
     private static final Logger LOG = LoggerFactory.getLogger(PineconeDBClient.class);
@@ -76,6 +83,8 @@ public class PineconeDBClient {
         try {
             Response response = client.newCall(request).execute();
             LOG.info("Successfully queried index: {}", indexName);
+//            extractQueryResponse(response.body().string());
+            List<QueryResponse> queryResponses = extractQueryResponse(response.body().string());
             return response;
         } catch (IOException e) {
             LOG.error("Error querying index: {}", indexName, e);
@@ -98,11 +107,48 @@ public class PineconeDBClient {
         try {
             Response response = client.newCall(request).execute();
             LOG.info("Successfully upserted for index: {}", indexName);
+//            JSONObject jsonResonse = new JSONObject(response.toString());
+
+//            QueryResponse queryResponse = extractQueryResponse(response.body().string());
             return response;
         } catch (IOException e) {
             LOG.error("Error upserting for index: {}", indexName, e);
             throw e;
         }
+    }
+
+    private List<QueryResponse> extractQueryResponse(String jsonResponseString) throws JsonProcessingException {
+        LOG.info("Extracting query response");
+//        QueryResponse queryResponse = new QueryResponse();
+//        LOG.info("Query response: {}", jsonResponseString);
+//        JSONObject jsonResponse = null;
+//        try {
+//            jsonResponse = new JSONObject(jsonResponseString);
+//        } catch (JSONException e) {
+//            LOG.error("Error parsing JSON response: {}", jsonResponseString.substring(0,10), e);
+//            throw new RuntimeException(e);
+//        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(jsonResponseString);
+
+        List<QueryResponse> queryResponses = new ArrayList<>();
+
+//        // Accessing elements similar to 'jq'
+//        JsonNode matches = rootNode.get("matches");
+//        for (JsonNode match : matches) {
+//            QueryResponse queryResponse = new QueryResponse();
+//
+//            queryResponse.setId(UUID.fromString(match.get("id").asText()));
+//            queryResponse.setScore(match.get("score").asDouble());
+//
+//            List<Double> valuesList = new ArrayList<>();
+//            match.get("values").forEach(value -> valuesList.add(value.asDouble()));
+//            queryResponse.setValues(valuesList);
+//            queryResponse.setMetadata(match.get("metadata").asText());
+//            queryResponses.add(queryResponse);
+//        }
+        return queryResponses;
     }
 
     @NotNull
