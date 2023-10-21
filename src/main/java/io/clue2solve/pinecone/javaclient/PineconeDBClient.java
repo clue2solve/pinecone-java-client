@@ -68,7 +68,7 @@ public class PineconeDBClient {
         }
     }
 
-    public Response query(String indexName, boolean includeValues, boolean includeMetadata, List<Double> vector) throws IOException {
+    public List<QueryResponse> query(String indexName, boolean includeValues, boolean includeMetadata, List<Double> vector) throws IOException {
         LOG.info("Querying index: {}", indexName);
 
         String url = buildUrl(indexName, EndPoints.QUERY.toString());
@@ -85,7 +85,7 @@ public class PineconeDBClient {
             LOG.info("Successfully queried index: {}", indexName);
 //            extractQueryResponse(response.body().string());
             List<QueryResponse> queryResponses = extractQueryResponse(response.body().string());
-            return response;
+            return queryResponses;
         } catch (IOException e) {
             LOG.error("Error querying index: {}", indexName, e);
             throw e;
@@ -119,35 +119,28 @@ public class PineconeDBClient {
 
     private List<QueryResponse> extractQueryResponse(String jsonResponseString) throws JsonProcessingException {
         LOG.info("Extracting query response");
-//        QueryResponse queryResponse = new QueryResponse();
-//        LOG.info("Query response: {}", jsonResponseString);
-//        JSONObject jsonResponse = null;
-//        try {
-//            jsonResponse = new JSONObject(jsonResponseString);
-//        } catch (JSONException e) {
-//            LOG.error("Error parsing JSON response: {}", jsonResponseString.substring(0,10), e);
-//            throw new RuntimeException(e);
-//        }
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonResponseString);
 
         List<QueryResponse> queryResponses = new ArrayList<>();
 
-//        // Accessing elements similar to 'jq'
-//        JsonNode matches = rootNode.get("matches");
-//        for (JsonNode match : matches) {
-//            QueryResponse queryResponse = new QueryResponse();
-//
-//            queryResponse.setId(UUID.fromString(match.get("id").asText()));
-//            queryResponse.setScore(match.get("score").asDouble());
-//
-//            List<Double> valuesList = new ArrayList<>();
-//            match.get("values").forEach(value -> valuesList.add(value.asDouble()));
-//            queryResponse.setValues(valuesList);
-//            queryResponse.setMetadata(match.get("metadata").asText());
-//            queryResponses.add(queryResponse);
-//        }
+        // Accessing elements similar to 'jq'
+        JsonNode matches = rootNode.get("matches");
+        for (JsonNode match : matches) {
+            QueryResponse queryResponse = new QueryResponse();
+
+            queryResponse.setId(UUID.fromString(match.get("id").asText()));
+            queryResponse.setScore(match.get("score").asDouble());
+
+            List<Double> valuesList = new ArrayList<>();
+            match.get("values").forEach(value -> valuesList.add(value.asDouble()));
+            queryResponse.setValues(valuesList);
+//            LOG.info("Metadata : {}", match.get("metadata"));
+            queryResponse.setMetadata(match.get("metadata").toString());
+            queryResponses.add(queryResponse);
+//            LOG.info("Query response: {}", queryResponse.toString());
+        }
         return queryResponses;
     }
 
