@@ -3,6 +3,7 @@ package io.clue2solve.pinecone.javaclient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.clue2solve.pinecone.javaclient.model.QueryRequest;
 import io.clue2solve.pinecone.javaclient.model.QueryResponse;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
@@ -68,64 +69,42 @@ public class PineconeDBClient {
         }
     }
 
-    public List<QueryResponse> query(String indexName, boolean includeValues, boolean includeMetadata, List<Double> vector) throws IOException {
-        LOG.info("Querying index: {}", indexName);
-
-        String url = buildUrl(indexName, EndPoints.QUERY.toString());
-        JSONObject jsonBody = constructJson(indexName, includeValues, includeMetadata, vector);
-
+    public List<QueryResponse> query(QueryRequest queryRequest) throws IOException {
+        String url = buildUrl(queryRequest.getIndexName(), EndPoints.QUERY.toString());
+        JSONObject jsonBody = constructJson(queryRequest.getIndexName(), queryRequest.isIncludeValues(), queryRequest.isIncludeMetadata(), queryRequest.getQueryVector());
         MediaType mediaType = MediaType.parse("application/json");
-
         RequestBody body = RequestBody.create(mediaType, jsonBody.toString());
-
-        Request request = prepareRequest(indexName, url, body);
-
+        Request request = prepareRequest(queryRequest.getIndexName(), url, body);
         try {
             Response response = client.newCall(request).execute();
-            LOG.info("Successfully queried index: {}", indexName);
-//            extractQueryResponse(response.body().string());
             List<QueryResponse> queryResponses = extractQueryResponse(response.body().string());
             return queryResponses;
         } catch (IOException e) {
-            LOG.error("Error querying index: {}", indexName, e);
+            LOG.error("Error querying index: {}", queryRequest.getIndexName(), e);
             throw e;
         }
     }
 
     public Response upsert(String indexName, String namespace) throws IOException {
-        LOG.info("Upserting for index: {}", indexName);
-
         String url = buildUrl(indexName, EndPoints.UPSERT.toString() + "/vectors/upsert");
         JSONObject json = new JSONObject();
         json.put("namespace", namespace);
-
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(mediaType, json.toString());
-
         Request request = prepareRequest(indexName, url, body);
 
         try {
             Response response = client.newCall(request).execute();
-            LOG.info("Successfully upserted for index: {}", indexName);
-//            JSONObject jsonResonse = new JSONObject(response.toString());
-
-//            QueryResponse queryResponse = extractQueryResponse(response.body().string());
             return response;
         } catch (IOException e) {
-            LOG.error("Error upserting for index: {}", indexName, e);
             throw e;
         }
     }
 
     private List<QueryResponse> extractQueryResponse(String jsonResponseString) throws JsonProcessingException {
-        LOG.info("Extracting query response");
-
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonResponseString);
-
         List<QueryResponse> queryResponses = new ArrayList<>();
-
-        // Accessing elements similar to 'jq'
         JsonNode matches = rootNode.get("matches");
         for (JsonNode match : matches) {
             QueryResponse queryResponse = new QueryResponse();
@@ -136,10 +115,8 @@ public class PineconeDBClient {
             List<Double> valuesList = new ArrayList<>();
             match.get("values").forEach(value -> valuesList.add(value.asDouble()));
             queryResponse.setValues(valuesList);
-//            LOG.info("Metadata : {}", match.get("metadata"));
             queryResponse.setMetadata(match.get("metadata").toString());
             queryResponses.add(queryResponse);
-//            LOG.info("Query response: {}", queryResponse.toString());
         }
         return queryResponses;
     }
@@ -169,14 +146,13 @@ public class PineconeDBClient {
 
     private String buildUrl(String indexName, String endpoint) {
         String formattedUrl = String.format("https://%s-%s.svc.%s.pinecone.io/%s", indexName, projectId, environment, endpoint);
-        LOG.info(formattedUrl);
+        LOG.info("Formatted URL : ",formattedUrl);
         return formattedUrl;
     }
 
 
     public static JSONObject constructJson(String indexName, boolean includeValues, boolean includeMetadata, List<Double> vector) {
         JSONObject jsonObject = new JSONObject();
-
         jsonObject.put("indexName", indexName);
         jsonObject.put("includeValues", includeValues);
         jsonObject.put("includeMetadata", includeMetadata);
