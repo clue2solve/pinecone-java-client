@@ -78,7 +78,6 @@ public class PineconeDBClient {
         Request request = prepareQueryRequest(queryRequest, url);
         try {
             Response response = client.newCall(request).execute();
-//            LOG.info("Query response: {}", response.body().string());
             List<QueryResponse> queryResponses = extractQueryResponse(response.body().string());
             return queryResponses;
         } catch (IOException e) {
@@ -87,20 +86,20 @@ public class PineconeDBClient {
         }
     }
 
-    public String upsert(UpsertRequest upsertRequest) throws IOException {
+    public String upsert(@NotNull UpsertRequest upsertRequest) throws IOException {
         String url = buildUrl(upsertRequest.getIndexName(), EndPoints.UPSERT.toString() );
 
         Request request = prepareUpsertRequest(upsertRequest, url);
 
         try {
             Response response = client.newCall(request).execute();
-
-            return "{upsertedCount: " + 1 + "}";
+            return response.body().string();
         } catch (Exception e) {
             throw e;
         }
     }
 
+    @NotNull
     private List<QueryResponse> extractQueryResponse(String jsonResponseString) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonResponseString);
@@ -155,7 +154,6 @@ public class PineconeDBClient {
                     .addHeader("Api-Key", apiKey);
 
             JSONObject queryJsonObject = queryRequest.getRequestAsJson();
-            LOG.info("Query request: {}", queryJsonObject.toString());
             RequestBody body = RequestBody.create(MediaType.parse("application/json"),
                     queryJsonObject.toString());
             builder.post(body);
@@ -179,12 +177,9 @@ public class PineconeDBClient {
             JSONObject json = new JSONObject();
             json.put("namespace", upsertRequest.getNameSpace());
             MediaType mediaType = MediaType.parse("application/json");
-            LOG.info("Upsert request body: {}", upsertRequest.toString());
 
-//            RequestBody body = RequestBody.create(mediaType, upsertRequest.getRequestAsJson().toString());
             builder.post(RequestBody.create(mediaType, String.valueOf(upsertRequest.toString())));
-            Request request = builder.build();
-            return request;
+            return builder.build();
 
         } catch (Exception e) {
             LOG.error("Error building Upsert request for index: {}", upsertRequest.getIndexName(), e);
