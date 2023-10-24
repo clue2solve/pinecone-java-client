@@ -17,6 +17,5 @@ public class QueryResponse {
     private List<Double> values;
 
     private String metadata; // this is a stringified JSON object, so you can parse it into a JSON object.
-    //TODO : check if this is a stringified JSON object or a JSON object
 
 }

@@ -5,10 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.clue2solve.pinecone.javaclient.model.QueryRequest;
 import io.clue2solve.pinecone.javaclient.model.QueryResponse;
+import io.clue2solve.pinecone.javaclient.model.UpsertRequest;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 
 public class PineconeDBClient {
     private static final Logger LOG = LoggerFactory.getLogger(PineconeDBClient.class);
@@ -28,6 +28,10 @@ public class PineconeDBClient {
 
     public PineconeDBClient(String environment, String projectId, String apiKey) {
         this.client = new OkHttpClient();
+
+        this.client = new OkHttpClient.Builder()
+                .addInterceptor(new LoggingInterceptor())
+                .build();
         this.environment = environment;
         this.projectId = projectId;
         this.apiKey = apiKey;
@@ -59,7 +63,7 @@ public class PineconeDBClient {
 
     public Response describeIndexStats(String indexName) throws IOException {
         String url = buildUrl(indexName, EndPoints.DESCRIBE_INDEX_STATS.toString());
-        Request request = prepareRequest(indexName, url, null);
+        Request request = preparNullBodyRequest(indexName, url);
         try {
             Response response = client.newCall(request).execute();
             return response;
@@ -71,12 +75,10 @@ public class PineconeDBClient {
 
     public List<QueryResponse> query(QueryRequest queryRequest) throws IOException {
         String url = buildUrl(queryRequest.getIndexName(), EndPoints.QUERY.toString());
-        JSONObject jsonBody = constructJson(queryRequest.getIndexName(), queryRequest.isIncludeValues(), queryRequest.isIncludeMetadata(), queryRequest.getQueryVector());
-        MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(mediaType, jsonBody.toString());
-        Request request = prepareRequest(queryRequest.getIndexName(), url, body);
+        Request request = prepareQueryRequest(queryRequest, url);
         try {
             Response response = client.newCall(request).execute();
+//            LOG.info("Query response: {}", response.body().string());
             List<QueryResponse> queryResponses = extractQueryResponse(response.body().string());
             return queryResponses;
         } catch (IOException e) {
@@ -85,18 +87,16 @@ public class PineconeDBClient {
         }
     }
 
-    public Response upsert(String indexName, String namespace) throws IOException {
-        String url = buildUrl(indexName, EndPoints.UPSERT.toString() + "/vectors/upsert");
-        JSONObject json = new JSONObject();
-        json.put("namespace", namespace);
-        MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(mediaType, json.toString());
-        Request request = prepareRequest(indexName, url, body);
+    public String upsert(UpsertRequest upsertRequest) throws IOException {
+        String url = buildUrl(upsertRequest.getIndexName(), EndPoints.UPSERT.toString() );
+
+        Request request = prepareUpsertRequest(upsertRequest, url);
 
         try {
             Response response = client.newCall(request).execute();
-            return response;
-        } catch (IOException e) {
+
+            return "{upsertedCount: " + 1 + "}";
+        } catch (Exception e) {
             throw e;
         }
     }
@@ -121,8 +121,9 @@ public class PineconeDBClient {
         return queryResponses;
     }
 
+
     @NotNull
-    private Request prepareRequest(String indexName, String url, RequestBody body) {
+    private Request preparNullBodyRequest(String indexName,String url) {
         try {
             Request.Builder builder = new Request.Builder()
                     .url(url)
@@ -130,12 +131,11 @@ public class PineconeDBClient {
                     .addHeader("content-type", "application/json")
                     .addHeader("Api-Key", apiKey);
 
-            if (body != null) {
-                builder.post(body);
-            } else {
-                builder.post(RequestBody.create(null, new byte[0]));
-            }
+            JSONObject json = new JSONObject();
+            json.put("namespace", indexName);
+            MediaType mediaType = MediaType.parse("application/json");
 
+            builder.post(RequestBody.create(null, new byte[0]));
             return builder.build();
 
         } catch (Exception e) {
@@ -144,9 +144,58 @@ public class PineconeDBClient {
         }
     }
 
+
+    @NotNull
+    private Request prepareQueryRequest(QueryRequest queryRequest, String url) {
+        try {
+            Request.Builder builder = new Request.Builder()
+                    .url(url)
+                    .addHeader("accept", "application/json")
+                    .addHeader("content-type", "application/json")
+                    .addHeader("Api-Key", apiKey);
+
+            JSONObject queryJsonObject = queryRequest.getRequestAsJson();
+            LOG.info("Query request: {}", queryJsonObject.toString());
+            RequestBody body = RequestBody.create(MediaType.parse("application/json"),
+                    queryJsonObject.toString());
+            builder.post(body);
+            return builder.build();
+
+        } catch (Exception e) {
+            LOG.error("Error building Query request for index: {}", queryRequest.getIndexName(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @NotNull
+    private Request prepareUpsertRequest(UpsertRequest upsertRequest, String url) {
+        try {
+            Request.Builder builder = new Request.Builder()
+                    .url(url)
+                    .addHeader("accept", "application/json")
+                    .addHeader("content-type", "application/json")
+                    .addHeader("Api-Key", apiKey);
+
+            JSONObject json = new JSONObject();
+            json.put("namespace", upsertRequest.getNameSpace());
+            MediaType mediaType = MediaType.parse("application/json");
+            LOG.info("Upsert request body: {}", upsertRequest.toString());
+
+//            RequestBody body = RequestBody.create(mediaType, upsertRequest.getRequestAsJson().toString());
+            builder.post(RequestBody.create(mediaType, String.valueOf(upsertRequest.toString())));
+            Request request = builder.build();
+            return request;
+
+        } catch (Exception e) {
+            LOG.error("Error building Upsert request for index: {}", upsertRequest.getIndexName(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
     private String buildUrl(String indexName, String endpoint) {
+        LOG.info("Building URL for index: {} and endpoint: {}", indexName, endpoint);
         String formattedUrl = String.format("https://%s-%s.svc.%s.pinecone.io/%s", indexName, projectId, environment, endpoint);
-        LOG.info("Formatted URL : ",formattedUrl);
+        LOG.info("Formatted URL : {} ",formattedUrl);
         return formattedUrl;
     }
 
