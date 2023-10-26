@@ -5,6 +5,10 @@ import org.json.JSONObject;
 
 import java.util.List;
 
+/**
+ * This is the request object for the upsert API.
+ * It contains the indexName, namespace, and the list of vectors to be upserted.
+ */
 @Getter
 @Setter
 @Builder

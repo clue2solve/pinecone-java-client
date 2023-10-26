@@ -3,6 +3,7 @@ package io.clue2solve.pinecone.javaclient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.clue2solve.pinecone.javaclient.model.DeleteRequest;
 import io.clue2solve.pinecone.javaclient.model.QueryRequest;
 import io.clue2solve.pinecone.javaclient.model.QueryResponse;
 import io.clue2solve.pinecone.javaclient.model.UpsertRequest;
@@ -17,7 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
+/**
+ * Client to interface with PineconeDB.
+ * Provides methods for fetching index statistics, querying, and performing upsert operations.
+ */
 public class PineconeDBClient {
     private static final Logger LOG = LoggerFactory.getLogger(PineconeDBClient.class);
 
@@ -26,6 +30,13 @@ public class PineconeDBClient {
     private String projectId;
     private String apiKey;
 
+    /**
+     * Constructs a new PineconeDBClient.
+     *
+     * @param environment Environment in which the PineconeDB instance resides.
+     * @param projectId   ID of the project.
+     * @param apiKey      API key for authentication.
+     */
     public PineconeDBClient(String environment, String projectId, String apiKey) {
         this.client = new OkHttpClient();
 
@@ -37,6 +48,18 @@ public class PineconeDBClient {
         this.apiKey = apiKey;
     }
 
+    /**
+     * Constructs a new PineconeDBClient with a custom OkHttpClient
+     */
+    protected OkHttpClient buildClient() {
+        return new OkHttpClient.Builder()
+                .addInterceptor(new LoggingInterceptor())
+                .build();
+    }
+
+    /**
+     * Enumerations for various PineconeDB endpoints.
+     */
     public enum EndPoints {
         DESCRIBE_INDEX_STATS {
             public String toString() {
@@ -61,6 +84,13 @@ public class PineconeDBClient {
 
     }
 
+    /**
+     * Fetches statistics related to the described index.
+     *
+     * @param indexName Name of the index to be described.
+     * @return Response from PineconeDB with the described statistics.
+     * @throws IOException if there's an error fetching index stats.
+     */
     public Response describeIndexStats(String indexName) throws IOException {
         String url = buildUrl(indexName, EndPoints.DESCRIBE_INDEX_STATS.toString());
         Request request = preparNullBodyRequest(indexName, url);
@@ -73,6 +103,13 @@ public class PineconeDBClient {
         }
     }
 
+    /**
+     * Queries PineconeDB using the provided request parameters.
+     *
+     * @param queryRequest Request parameters for the query.
+     * @return List of QueryResponses resulting from the query.
+     * @throws IOException if there's an error during the query.
+     */
     public List<QueryResponse> query(QueryRequest queryRequest) throws IOException {
         String url = buildUrl(queryRequest.getIndexName(), EndPoints.QUERY.toString());
         Request request = prepareQueryRequest(queryRequest, url);
@@ -86,6 +123,14 @@ public class PineconeDBClient {
         }
     }
 
+
+    /**
+     * Performs an upsert operation on PineconeDB.
+     *
+     * @param upsertRequest Request parameters for the upsert operation.
+     * @return Response string from PineconeDB as a result of the upsert operation.
+     * @throws IOException if there's an error during the upsert operation.
+     */
     public String upsert(@NotNull UpsertRequest upsertRequest) throws IOException {
         String url = buildUrl(upsertRequest.getIndexName(), EndPoints.UPSERT.toString() );
 
@@ -99,6 +144,33 @@ public class PineconeDBClient {
         }
     }
 
+    /**
+     * Performs a delete operation on PineconeDB.
+     *
+     * @param deleteRequest Request parameters for the delete operation.
+     * @return Response string from PineconeDB as a result of the delete operation.
+     * @throws IOException if there's an error during the delete operation.
+     */
+    public String delete(DeleteRequest deleteRequest) throws IOException {
+        String url = buildUrl(deleteRequest.getIndexName(), EndPoints.DELETE.toString() );
+
+        Request request = preparNullBodyRequest(deleteRequest.getIndexName(), url);
+
+        try {
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Extracts the QueryResponses from the JSON response string.
+     *
+     * @param jsonResponseString JSON response string from PineconeDB.
+     * @return List of QueryResponses.
+     * @throws JsonProcessingException if there's an error processing the JSON response string.
+     */
     @NotNull
     private List<QueryResponse> extractQueryResponse(String jsonResponseString) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
@@ -121,6 +193,13 @@ public class PineconeDBClient {
     }
 
 
+    /**
+     * Prepares a request for the given index and endpoint.
+     *
+     * @param indexName Name of the index.
+     * @param endpoint  Endpoint to be called.
+     * @return Prepared request.
+     */
     @NotNull
     private Request preparNullBodyRequest(String indexName,String url) {
         try {
@@ -144,6 +223,13 @@ public class PineconeDBClient {
     }
 
 
+    /**
+     * Prepares a request for the given index and endpoint.
+     *
+     * @param queryRequest Request parameters for the query.
+     * @param url          URL to be called.
+     * @return Prepared request.
+     */
     @NotNull
     private Request prepareQueryRequest(QueryRequest queryRequest, String url) {
         try {
@@ -165,6 +251,13 @@ public class PineconeDBClient {
         }
     }
 
+    /**
+     * Prepares a request for the given index and endpoint.
+     *
+     * @param upsertRequest Request parameters for the upsert operation.
+     * @param url           URL to be called.
+     * @return Prepared request.
+     */
     @NotNull
     private Request prepareUpsertRequest(UpsertRequest upsertRequest, String url) {
         try {
@@ -187,6 +280,13 @@ public class PineconeDBClient {
         }
     }
 
+    /**
+     * Builds the URL for the given index and endpoint.
+     *
+     * @param indexName Name of the index.
+     * @param endpoint  Endpoint to be called.
+     * @return URL for the given index and endpoint.
+     */
     private String buildUrl(String indexName, String endpoint) {
         LOG.info("Building URL for index: {} and endpoint: {}", indexName, endpoint);
         String formattedUrl = String.format("https://%s-%s.svc.%s.pinecone.io/%s", indexName, projectId, environment, endpoint);
@@ -194,15 +294,4 @@ public class PineconeDBClient {
         return formattedUrl;
     }
 
-
-    public static JSONObject constructJson(String indexName, boolean includeValues, boolean includeMetadata, List<Double> vector) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("indexName", indexName);
-        jsonObject.put("includeValues", includeValues);
-        jsonObject.put("includeMetadata", includeMetadata);
-        jsonObject.put("top_k", 10);
-        jsonObject.put("vector", vector);
-
-        return jsonObject;
-    }
 }

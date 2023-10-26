@@ -8,6 +8,10 @@ import okio.Buffer;
 
 import java.io.IOException;
 
+/**
+ * Interceptor to log the request and response
+ * https://stackoverflow.com/questions/32970416/how-to-enable-logging-for-okhttp-3-on-android
+ */
 public class LoggingInterceptor implements Interceptor {
     @Override public Response intercept(Interceptor.Chain chain) throws IOException {
         Request request = chain.request();
