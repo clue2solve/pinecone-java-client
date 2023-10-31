@@ -6,17 +6,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.clue2solve.pinecone.javaclient.model.UpsertRequest;
 import okhttp3.*;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
 
 import java.io.IOException;
 
 import static org.mockito.Mockito.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class PineconeDBClientTest {
+public class PineconeDBClientFixMe {
 
     private PineconeDBClient client;
     private OkHttpClient mockHttpClient;
