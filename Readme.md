@@ -5,7 +5,7 @@ The Pinecone Java Client is an unofficial Java library for interacting with Pine
 ### Features
 - Fetch index statistics
 - Query operations
-U- psert operations
+- Upsert operations
 - Delete operations
 - Requirements
 - Java 8 or higher
