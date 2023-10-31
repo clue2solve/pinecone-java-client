@@ -72,40 +72,40 @@ The client library uses several model classes to structure the data for requests
 **QueryResponse**
 **Description**: Represents the response from a query operation.
 **Fields**:
-- id: UUID of the vector.
-- score: The score of the vector.
-- values: List of doubles representing the vector values.
-- metadata: String containing JSON metadata associated with the vector.
+- `id`: UUID of the vector.
+- `score`: The score of the vector.
+- `values`: List of doubles representing the vector values.
+- `metadata`: String containing JSON metadata associated with the vector.
 
 
 **UpsertRequest**
 **Description**: Represents the request body for upsert operations.
 **Fields**:
-- indexName: Name of the index where vectors are upserted.
-- nameSpace: Namespace of the index.
-- upsertVectorsList: List of UpsertVector objects to be upserted.
+- `indexName`: Name of the index where vectors are upserted.
+- `nameSpace`: Namespace of the index.
+- `upsertVectorsList`: List of UpsertVector objects to be upserted.
 
 **UpsertVector**
 **Description**: Represents a single vector in an upsert operation.
 **Fields**:
-- id: Unique identifier for the vector.
-- values: List of doubles representing the vector.
-- metadata: String containing JSON metadata associated with the vector.
+- `id`: Unique identifier for the vector.
+- `values`: List of doubles representing the vector.
+- `metadata`: String containing JSON metadata associated with the vector.
 
 **DeleteRequest**
 **Description**: Represents the request body for delete operations.
 **Fields**:
-- indexName: Name of the index from which vectors are deleted.
-- namespace: Namespace of the index.
-- ids: Array of string IDs representing the vectors to be deleted.
-- deleteAll: Boolean flag to delete all vectors (not supported in GCP Starter environments).
+- `indexName`: Name of the index from which vectors are deleted.
+- `namespace`: Namespace of the index.
+- `ids`: Array of string IDs representing the vectors to be deleted.
+- `deleteAll`: Boolean flag to delete all vectors (not supported in GCP Starter environments).
 
 
-Contributing
+### Contributing
 Contributions to the Pinecone Java Client are welcome! Please read our contributing guidelines to get started.
 
-License
+## License
 This project is licensed under MIT License.
 
-Disclaimer
+## Disclaimer
 This is an unofficial client library for PineconeDB and is not affiliated with, maintained, authorized, endorsed, or sponsored by Pinecone Systems Inc.
