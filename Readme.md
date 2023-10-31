@@ -24,6 +24,7 @@ Include the following dependency in your project's build file:
 ```
 
 ### Usage
+A Sample SpringBoot Web app that is built to show the usage of this client is available at [pinecone-console](https://github.com/clue2solve/pinecone-console), which can be used as a reference to build your own application. This project is still a WIP, and will be updated with more features and examples.
 
 #### Initializing the Client
 ```java
