@@ -8,11 +8,7 @@ The Pinecone Java Client is an unofficial Java library for interacting with Pine
 - Query operations
 - Upsert operations
 - Delete operations
-- Requirements
-- Java 8 or higher
-- OkHttp3
-- Jackson (for JSON processing)
-- SLF4J (for logging)
+
 
 ### Installation
 Include the following dependency in your project's build file:
