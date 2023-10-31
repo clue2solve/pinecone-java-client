@@ -64,10 +64,10 @@ The client library uses several model classes to structure the data for requests
 **Fields**:
 **indexName**: Name of the index to query.
 
-- queryVector: A list of doubles representing the query vector.
-- includeMetadata: Boolean flag to include metadata in the response.
-- includeValues: Boolean flag to include vector values in the response.
-- top_k: Integer specifying the number of top results to return.
+- `queryVector`: A list of doubles representing the query vector.
+- `includeMetadata`: Boolean flag to include metadata in the response.
+- `includeValues`: Boolean flag to include vector values in the response.
+- `top_k`: Integer specifying the number of top results to return.
 
 **QueryResponse**
 **Description**: Represents the response from a query operation.
