@@ -24,7 +24,7 @@ public class PineconeDBClientTest {
     private Response mockResponse;
     private ResponseBody mockResponseBody;
 
-    @BeforeAll
+//    @BeforeAll
     public void setUp() throws IOException {
         // Mocking the external dependencies
         mockHttpClient = mock(OkHttpClient.class);
