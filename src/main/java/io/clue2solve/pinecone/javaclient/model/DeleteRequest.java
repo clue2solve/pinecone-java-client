@@ -31,7 +31,7 @@ public class DeleteRequest {
     public String toString() {
         //return a JSON String lile this : {\"deleteAll\":\"false\",\"ids\":[\"abcd1234\"],\"namespace\":\"default\"}
         JSONObject jsonObject = new JSONObject();
-        //jsonObject.put("indexName", this.getIndexName()); // Delete works on namespace level, not index level
+        jsonObject.put("indexName", this.getIndexName()); // Delete works on namespace level, not index level
         jsonObject.put("namespace", this.getNamespace());
         //jsonObject.put("deleteAll", this.isDeleteAll()); // not supported for GCP Starter environments, thus not supported here
         jsonObject.put("ids", this.getIds());

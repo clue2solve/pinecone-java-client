@@ -15,10 +15,15 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QueryRequest {
+    @NonNull
+    private String nameSpace;
+    @NonNull
     private String indexName;
+    @NonNull
     private List<Double> queryVector;
     private boolean includeMetadata;
     private boolean includeValues;
+    @NonNull
     private int top_k = 10;
 
     /**
@@ -27,6 +32,7 @@ public class QueryRequest {
      */
     public  JSONObject getRequestAsJson() {
         JSONObject jsonObject = new JSONObject();
+        jsonObject.put("nameSpace", this.getNameSpace());
         jsonObject.put("indexName", this.getIndexName());
         jsonObject.put("includeValues", this.isIncludeValues());
         jsonObject.put("includeMetadata", this.isIncludeMetadata());

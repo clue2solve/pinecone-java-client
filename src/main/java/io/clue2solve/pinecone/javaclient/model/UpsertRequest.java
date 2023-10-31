@@ -31,6 +31,8 @@ public class UpsertRequest {
         JSONObject vectorsJson = new JSONObject();
         for (UpsertVector upsertVector : upsertVectorsList) {
             JSONObject vectorJson = new JSONObject();
+            vectorJson.put("nameSpace", this.getNameSpace());
+            vectorJson.put("indexName", this.getIndexName());
             vectorJson.put("id", upsertVector.getId());
             vectorJson.put("values", upsertVector.getValues());
             vectorJson.put("metadata", new JSONObject(upsertVector.getMetadata()));
