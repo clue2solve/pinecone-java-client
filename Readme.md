@@ -163,6 +163,8 @@ FetchResponse fetchResponse = /* response from fetch operation */;
 ```
 ----
 
+### Roadmap
+The Roadmap is currently in the form of issues for this repository. Will move to more formal backlog management tools in the future.
 
 ### Contributing
 Contributions to the Pinecone Java Client are welcome! 
