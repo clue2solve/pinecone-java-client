@@ -1,9 +1,6 @@
 package io.clue2solve.pinecone.javaclient.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.json.JSONObject;
 
 /**
@@ -15,6 +12,7 @@ import org.json.JSONObject;
  */
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeleteRequest {

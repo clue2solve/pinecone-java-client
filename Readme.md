@@ -5,9 +5,10 @@ The Pinecone Java Client is an unofficial Java library for interacting with Pine
 
 ### Features
 - Fetch index statistics
-- Query operations
-- Upsert operations
-- Delete operations
+- Vector Query operations
+- Vector Upsert operations
+- Vector Delete operations
+- Vector Fetch operations
 
 
 ### Installation
@@ -59,13 +60,21 @@ The client library uses several model classes to structure the data for requests
 #### QueryRequest
 **Description**: Represents the request body for query operations.
 **Fields**:
-**indexName**: Name of the index to query.
-
+- `indexName`: Name of the index to query.
 - `queryVector`: A list of doubles representing the query vector.
 - `includeMetadata`: Boolean flag to include metadata in the response.
 - `includeValues`: Boolean flag to include vector values in the response.
 - `top_k`: Integer specifying the number of top results to return.
-
+#### Usage 
+```java
+QueryRequest queryRequest = QueryRequest.builder()
+.indexName("myIndex")
+.queryVector(Arrays.asList(1.0, 2.0, 3.0))
+.includeMetadata(true)
+.includeValues(true)
+.top_k(5)
+.build();
+```
 **QueryResponse**
 **Description**: Represents the response from a query operation.
 **Fields**:
@@ -74,13 +83,27 @@ The client library uses several model classes to structure the data for requests
 - `values`: List of doubles representing the vector values.
 - `metadata`: String containing JSON metadata associated with the vector.
 
-
+----
 **UpsertRequest**
 **Description**: Represents the request body for upsert operations.
 **Fields**:
 - `indexName`: Name of the index where vectors are upserted.
 - `nameSpace`: Namespace of the index.
 - `upsertVectorsList`: List of UpsertVector objects to be upserted.
+#### Usage 
+```java
+List<UpsertVector> upsertVectors = Arrays.asList(
+new UpsertVector("vectorId1", Arrays.asList(1.0, 2.0, 3.0), "{\"key1\":\"value1\"}"),
+new UpsertVector("vectorId2", Arrays.asList(4.0, 5.0, 6.0), "{\"key2\":\"value2\"}")
+);
+```
+```java
+UpsertRequest upsertRequest = UpsertRequest.builder()
+.indexName("myIndex")
+.nameSpace("myNamespace")
+.upsertVectorsList(upsertVectors)
+.build();
+```
 
 **UpsertVector**
 **Description**: Represents a single vector in an upsert operation.
@@ -88,7 +111,7 @@ The client library uses several model classes to structure the data for requests
 - `id`: Unique identifier for the vector.
 - `values`: List of doubles representing the vector.
 - `metadata`: String containing JSON metadata associated with the vector.
-
+----
 **DeleteRequest**
 **Description**: Represents the request body for delete operations.
 **Fields**:
@@ -96,6 +119,86 @@ The client library uses several model classes to structure the data for requests
 - `namespace`: Namespace of the index.
 - `ids`: Array of string IDs representing the vectors to be deleted.
 - `deleteAll`: Boolean flag to delete all vectors (not supported in GCP Starter environments).
+#### Usage 
+```java
+DeleteRequest deleteRequest = DeleteRequest.builder()
+.indexName("myIndex")
+.namespace("myNamespace")
+.ids(new String[]{"vectorId1", "vectorId2"})
+.build();
+```
+----
+**FetchRequest**
+**Description**: Represents the request body for fetch operations.
+**Fields**:
+- `indexName`: Name of the index from which vectors are fetched.
+- `nameSpace`: Namespace of the index.
+- `ids`: Array of string IDs representing the vectors to be fetched.
+
+Usage:
+```java
+FetchRequest fetchRequest = FetchRequest.builder()
+.indexName("indexName")
+.nameSpace("nameSpace")
+.ids(new String[]{"id1", "id2"})
+.build();
+```
+
+**FetchResponse**
+**Description**: Represents the response from a fetch operation.
+**Fields**:
+- `id`: UUID of the fetched vector.
+- `values`: List of doubles representing the vector values.
+- `nameSpace`: Namespace of the index from which the vector was fetched.
+- `indexName`: Name of the index from which the vector was fetched.
+- `additionalProp`: Additional properties associated with the vector.
+- `sparseValues`: Sparse representation of vector values, if applicable.
+- `metadata`: String containing JSON metadata associated with the vector.
+
+Usage:
+```java
+// Typically used to capture and process the response from a fetch operation
+FetchResponse fetchResponse = /* response from fetch operation */;
+```
+----
+
+
+
+
+
+DeleteRequest
+
+
+FetchRequest
+java
+Copy code
+FetchRequest fetchRequest = FetchRequest.builder()
+.indexName("myIndex")
+.nameSpace("myNamespace")
+.ids(new String[]{"vectorId1", "vectorId2"})
+.build();
+UpsertVector
+java
+Copy code
+UpsertVector upsertVector = UpsertVector.builder()
+.id("vectorId")
+.values(Arrays.asList(1.0, 2.0, 3.0))
+.metadata("{\"key\":\"value\"}")
+.build();
+These examples demonstrate how to use the Lombok @Builder pattern to create instances of the model classes. This pattern is particularly useful for classes with multiple fields, making the code more maintainable and readable.
+
+
+
+
+
+Regenerate
+
+
+Send a message
+
+ChatGPT may produce inaccurate information about people, places, or facts. ChatGPT September 25 Version
+
+
 
 
 ### Contributing
