@@ -3,10 +3,7 @@ package io.clue2solve.pinecone.javaclient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.clue2solve.pinecone.javaclient.model.DeleteRequest;
-import io.clue2solve.pinecone.javaclient.model.QueryRequest;
-import io.clue2solve.pinecone.javaclient.model.QueryResponse;
-import io.clue2solve.pinecone.javaclient.model.UpsertRequest;
+import io.clue2solve.pinecone.javaclient.model.*;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -123,6 +120,25 @@ public class PineconeDBClient {
         }
     }
 
+    /**
+     * Fetches the vector and metadata for the given ID.
+     *
+     * @param fetchRequest Request parameters for the fetch operation.
+     * @return FetchResponse containing the vector and metadata.
+     * @throws IOException if there's an error during the fetch operation.
+     */
+    public FetchResponse fetch(FetchRequest fetchRequest) throws IOException {
+        String url = buildUrl(fetchRequest.getIndexName(), EndPoints.QUERY.toString());
+        Request request = prepareFetchRequest(fetchRequest, url);
+        try {
+            Response response = client.newCall(request).execute();
+            FetchResponse fetchResponse = extractFetchResponse(response.body().string());
+            return fetchResponse;
+        } catch (IOException e) {
+            LOG.error("Error fetching vector for ids: {}", fetchRequest.getIds(), e);
+            throw e;
+        }
+    }
 
     /**
      * Performs an upsert operation on PineconeDB.
@@ -154,7 +170,7 @@ public class PineconeDBClient {
     public String delete(DeleteRequest deleteRequest) throws IOException {
         String url = buildUrl(deleteRequest.getIndexName(), EndPoints.DELETE.toString() );
 
-        Request request = preparDeleteBodylRequest(deleteRequest, url);
+        Request request = preparDeletelRequest(deleteRequest, url);
 
         try {
             Response response = client.newCall(request).execute();
@@ -192,12 +208,31 @@ public class PineconeDBClient {
         return queryResponses;
     }
 
+    private FetchResponse extractFetchResponse(String jsonResponseString) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(jsonResponseString);
+        FetchResponse fetchResponse = new FetchResponse();
+
+        fetchResponse.setId(UUID.fromString(rootNode.get("id").asText()));
+
+        List<Double> valuesList = new ArrayList<>();
+        rootNode.get("values").forEach(value -> valuesList.add(value.asDouble()));
+        fetchResponse.setValues(valuesList);
+        fetchResponse.setMetadata(rootNode.get("metadata").toString());
+
+        fetchResponse.setAdditionalProp(rootNode.get("additionalProp").toString()); //TODO: Convert this into a JSON object
+        fetchResponse.setSparseValues(rootNode.get("sparseValues").toString()); //TODO: Convert this into a JSON object
+        fetchResponse.setNameSpace(rootNode.get("namespace").toString());
+        fetchResponse.setIndexName(rootNode.get("indexName").toString());
+
+        return fetchResponse;
+    }
 
     /**
      * Prepares a request for the given index and endpoint.
      *
      * @param indexName Name of the index.
-     * @param endpoint  Endpoint to be called.
+     * @param url  Endpoint to be called.
      * @return Prepared request.
      */
     @NotNull
@@ -286,7 +321,7 @@ public class PineconeDBClient {
      * @param url
      * @return
      */
-    private Request preparDeleteBodylRequest(DeleteRequest deleteRequest, String url) {
+    private Request preparDeletelRequest(DeleteRequest deleteRequest, String url) {
         try {
             Request.Builder builder = new Request.Builder()
                     .url(url)
@@ -300,7 +335,35 @@ public class PineconeDBClient {
             return builder.build();
 
         } catch (Exception e) {
-            LOG.error("Error building request for Namespace: {}", deleteRequest.getNamespace(), e);
+            LOG.error("Error building Delete request for Namespace: {}", deleteRequest.getNamespace(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Prepares a request for the given index and endpoint.
+     *
+     * @param fetchRequest Request parameters for the fetch operation.
+     * @param url          URL to be called.
+     * @return Prepared request.
+     */
+    private Request prepareFetchRequest(FetchRequest fetchRequest, String url) {
+        try {
+            Request.Builder builder = new Request.Builder()
+                    .url(url)
+                    .addHeader("accept", "application/json")
+                    .addHeader("content-type", "application/json")
+                    .addHeader("Api-Key", apiKey);
+
+            JSONObject json = new JSONObject();
+            json.put("namespace", fetchRequest.getNameSpace());
+            MediaType mediaType = MediaType.parse("application/json");
+
+            builder.post(RequestBody.create(mediaType, String.valueOf(fetchRequest.toString())));
+            return builder.build();
+
+        } catch (Exception e) {
+            LOG.error("Error building Fetch request for Namespace: {}", fetchRequest.getNameSpace(), e);
             throw new RuntimeException(e);
         }
     }
