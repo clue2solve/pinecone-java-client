@@ -1,4 +1,5 @@
 ## Pinecone Java Client
+[![Java CI with Maven](https://github.com/clue2solve/pinecone-java-client/actions/workflows/maven.yml/badge.svg)](https://github.com/clue2solve/pinecone-java-client/actions/workflows/maven.yml)
 ### Overview
 The Pinecone Java Client is an unofficial Java library for interacting with PineconeDB, a vector database ideal for building vector search applications. This client library facilitates operations such as fetching index statistics, querying, and performing upsert and delete operations in PineconeDB.
 
