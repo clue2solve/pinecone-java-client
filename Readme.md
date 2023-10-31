@@ -134,7 +134,7 @@ DeleteRequest deleteRequest = DeleteRequest.builder()
 **Fields**:
 - `indexName`: Name of the index from which vectors are fetched.
 - `nameSpace`: Namespace of the index.
-- `ids`: Array of string IDs representing the vectors to be fetched.
+- `ids`: Array of string IDs representing the vectorsgpg --list to be fetched.
 
 Usage:
 ```java
