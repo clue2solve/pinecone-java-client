@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.json.JSONObject;
 
 /**
  * This class is used to create a DeleteRequest object, which is then used to create a JSON object
@@ -28,7 +29,13 @@ public class DeleteRequest {
      * @return JSONObject Stringified JSON object.
      */
     public String toString() {
-        return "DeleteRequest(namespace=" + this.getNamespace() + ", ids=" + java.util.Arrays.deepToString(this.getIds()) + ", deleteAll=" + this.isDeleteAll() + ")";
+        //return a JSON String lile this : {\"deleteAll\":\"false\",\"ids\":[\"abcd1234\"],\"namespace\":\"default\"}
+        JSONObject jsonObject = new JSONObject();
+        //jsonObject.put("indexName", this.getIndexName()); // Delete works on namespace level, not index level
+        jsonObject.put("namespace", this.getNamespace());
+        //jsonObject.put("deleteAll", this.isDeleteAll()); // not supported for GCP Starter environments, thus not supported here
+        jsonObject.put("ids", this.getIds());
+        return jsonObject.toString();
     }
 
 }

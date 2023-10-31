@@ -154,7 +154,7 @@ public class PineconeDBClient {
     public String delete(DeleteRequest deleteRequest) throws IOException {
         String url = buildUrl(deleteRequest.getIndexName(), EndPoints.DELETE.toString() );
 
-        Request request = preparNullBodyRequest(deleteRequest.getIndexName(), url);
+        Request request = preparDeleteBodylRequest(deleteRequest, url);
 
         try {
             Response response = client.newCall(request).execute();
@@ -276,6 +276,31 @@ public class PineconeDBClient {
 
         } catch (Exception e) {
             LOG.error("Error building Upsert request for index: {}", upsertRequest.getIndexName(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Prepares a request for the given index and endpoint.
+     * @param deleteRequest
+     * @param url
+     * @return
+     */
+    private Request preparDeleteBodylRequest(DeleteRequest deleteRequest, String url) {
+        try {
+            Request.Builder builder = new Request.Builder()
+                    .url(url)
+                    .addHeader("accept", "application/json")
+                    .addHeader("content-type", "application/json")
+                    .addHeader("Api-Key", apiKey);
+
+            MediaType mediaType = MediaType.parse("application/json");
+
+            builder.post(RequestBody.create(mediaType, String.valueOf(deleteRequest.toString())));
+            return builder.build();
+
+        } catch (Exception e) {
+            LOG.error("Error building request for Namespace: {}", deleteRequest.getNamespace(), e);
             throw new RuntimeException(e);
         }
     }
