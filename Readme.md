@@ -165,8 +165,7 @@ FetchResponse fetchResponse = /* response from fetch operation */;
 
 
 ### Contributing
-Contributions to the Pinecone Java Client are welcome! Please read our contributing guidelines to get started.
-
+Contributions to the Pinecone Java Client are welcome! 
 ## License
 This project is licensed under MIT License.
 
