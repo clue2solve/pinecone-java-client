@@ -163,44 +163,6 @@ FetchResponse fetchResponse = /* response from fetch operation */;
 ----
 
 
-
-
-
-DeleteRequest
-
-
-FetchRequest
-java
-Copy code
-FetchRequest fetchRequest = FetchRequest.builder()
-.indexName("myIndex")
-.nameSpace("myNamespace")
-.ids(new String[]{"vectorId1", "vectorId2"})
-.build();
-UpsertVector
-java
-Copy code
-UpsertVector upsertVector = UpsertVector.builder()
-.id("vectorId")
-.values(Arrays.asList(1.0, 2.0, 3.0))
-.metadata("{\"key\":\"value\"}")
-.build();
-These examples demonstrate how to use the Lombok @Builder pattern to create instances of the model classes. This pattern is particularly useful for classes with multiple fields, making the code more maintainable and readable.
-
-
-
-
-
-Regenerate
-
-
-Send a message
-
-ChatGPT may produce inaccurate information about people, places, or facts. ChatGPT September 25 Version
-
-
-
-
 ### Contributing
 Contributions to the Pinecone Java Client are welcome! Please read our contributing guidelines to get started.
 
