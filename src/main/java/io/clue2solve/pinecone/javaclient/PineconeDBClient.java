@@ -45,14 +45,7 @@ public class PineconeDBClient {
         this.apiKey = apiKey;
     }
 
-    /**
-     * Constructs a new PineconeDBClient with a custom OkHttpClient
-     */
-    protected OkHttpClient buildClient() {
-        return new OkHttpClient.Builder()
-                .addInterceptor(new LoggingInterceptor())
-                .build();
-    }
+
 
     /**
      * Enumerations for various PineconeDB endpoints.
@@ -276,6 +269,7 @@ public class PineconeDBClient {
                     .addHeader("Api-Key", apiKey);
 
             JSONObject queryJsonObject = queryRequest.getRequestAsJson();
+            LOG.info("Query JSON: {}", queryJsonObject.toString());
             RequestBody body = RequestBody.create(MediaType.parse("application/json"),
                     queryJsonObject.toString());
             builder.post(body);
