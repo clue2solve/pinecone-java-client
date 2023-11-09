@@ -203,6 +203,7 @@ public class PineconeDBClient {
             match.get("values").forEach(value -> valuesList.add(value.asDouble()));
             queryResponse.setValues(valuesList);
             queryResponse.setMetadata(match.get("metadata").toString());
+            LOG.info("QueryResponse: {}", queryResponse.toString());
             queryResponses.add(queryResponse);
         }
         return queryResponses;
