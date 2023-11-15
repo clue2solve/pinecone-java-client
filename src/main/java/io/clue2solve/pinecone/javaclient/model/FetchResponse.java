@@ -19,10 +19,12 @@ public class FetchResponse {
     private UUID id;
     private List<Double> values;
     private String nameSpace;
-    private String indexName;
+
     private String additionalProp;
     private String sparseValues;
     private String metadata; // this is a stringified JSON object, so you can parse it into a JSON object.
+
+
 
 }
 

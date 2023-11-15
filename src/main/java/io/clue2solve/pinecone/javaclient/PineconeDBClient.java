@@ -1,6 +1,7 @@
 package io.clue2solve.pinecone.javaclient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.clue2solve.pinecone.javaclient.model.*;
@@ -22,30 +23,24 @@ import java.util.UUID;
 public class PineconeDBClient {
     private static final Logger LOG = LoggerFactory.getLogger(PineconeDBClient.class);
 
-    private OkHttpClient client;
+    private OkHttpClientWrapper client;
     private String environment;
     private String projectId;
     private String apiKey;
 
-    /**
-     * Constructs a new PineconeDBClient.
-     *
-     * @param environment Environment in which the PineconeDB instance resides.
-     * @param projectId   ID of the project.
-     * @param apiKey      API key for authentication.
-     */
     public PineconeDBClient(String environment, String projectId, String apiKey) {
-        this.client = new OkHttpClient();
-
-        this.client = new OkHttpClient.Builder()
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .addInterceptor(new LoggingInterceptor())
                 .build();
+        this.client = new OkHttpClientWrapper(okHttpClient);
         this.environment = environment;
         this.projectId = projectId;
         this.apiKey = apiKey;
     }
 
-
+    public void setClient(OkHttpClientWrapper client) {
+        this.client = client;
+    }
 
     /**
      * Enumerations for various PineconeDB endpoints.
@@ -70,7 +65,13 @@ public class PineconeDBClient {
             public String toString() {
                 return "vectors/delete";
             }
+        },
+        FETCH {
+            public String toString() {
+                return "vectors/fetch";
+            }
         }
+
 
     }
 
@@ -121,7 +122,7 @@ public class PineconeDBClient {
      * @throws IOException if there's an error during the fetch operation.
      */
     public FetchResponse fetch(FetchRequest fetchRequest) throws IOException {
-        String url = buildUrl(fetchRequest.getIndexName(), EndPoints.QUERY.toString());
+        String url = buildUrl(fetchRequest.getIndexName(), EndPoints.FETCH.toString());
         Request request = prepareFetchRequest(fetchRequest, url);
         try {
             Response response = client.newCall(request).execute();
@@ -181,7 +182,7 @@ public class PineconeDBClient {
      * @throws JsonProcessingException if there's an error processing the JSON response string.
      */
     @NotNull
-    private List<QueryResponse> extractQueryResponse(String jsonResponseString) throws JsonProcessingException {
+    public List<QueryResponse> extractQueryResponse(String jsonResponseString) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonResponseString);
         List<QueryResponse> queryResponses = new ArrayList<>();
@@ -206,18 +207,41 @@ public class PineconeDBClient {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonResponseString);
         FetchResponse fetchResponse = new FetchResponse();
+        JsonNode vectors = rootNode.get("vectors");
+        String id = vectors.fieldNames().next();
+        JsonNode vector = vectors.get(id);
+        fetchResponse.setId(UUID.fromString(vector.get("id").asText()));
 
-        fetchResponse.setId(UUID.fromString(rootNode.get("id").asText()));
 
-        List<Double> valuesList = new ArrayList<>();
-        rootNode.get("values").forEach(value -> valuesList.add(value.asDouble()));
-        fetchResponse.setValues(valuesList);
-        fetchResponse.setMetadata(rootNode.get("metadata").toString());
-
-        fetchResponse.setAdditionalProp(rootNode.get("additionalProp").toString()); //TODO: Convert this into a JSON object
-        fetchResponse.setSparseValues(rootNode.get("sparseValues").toString()); //TODO: Convert this into a JSON object
+        JsonNode valuesJson = vector.get("values");
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Double> values = null;
+        try {
+            values = objectMapper.readValue(valuesJson.toString(), new TypeReference<List<Double>>(){});
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        fetchResponse.setValues(values);
         fetchResponse.setNameSpace(rootNode.get("namespace").toString());
-        fetchResponse.setIndexName(rootNode.get("indexName").toString());
+        fetchResponse.setMetadata(vector.get("metadata").toString());
+
+
+
+//        //Extract only if the response is not empty
+//        if(rootNode.get("id") == null) {
+//            return fetchResponse;
+//        }
+//        fetchResponse.setId(UUID.fromString(rootNode.get("id").asText()));
+//
+//        List<Double> valuesList = new ArrayList<>();
+//        rootNode.get("values").forEach(value -> valuesList.add(value.asDouble()));
+//        fetchResponse.setValues(valuesList);
+//        fetchResponse.setMetadata(rootNode.get("metadata").toString());
+//
+//        fetchResponse.setAdditionalProp(rootNode.get("additionalProp").toString()); //TODO: Convert this into a JSON object
+//        fetchResponse.setSparseValues(rootNode.get("sparseValues").toString()); //TODO: Convert this into a JSON object
+//        fetchResponse.setNameSpace(rootNode.get("namespace").toString());
+//        fetchResponse.setIndexName(rootNode.get("indexName").toString());
 
         return fetchResponse;
     }
@@ -298,7 +322,7 @@ public class PineconeDBClient {
                     .addHeader("Api-Key", apiKey);
 
             JSONObject json = new JSONObject();
-            json.put("namespace", upsertRequest.getNameSpace());
+            json.put("namespace", upsertRequest.getNamespace());
             MediaType mediaType = MediaType.parse("application/json");
 
             builder.post(RequestBody.create(mediaType, String.valueOf(upsertRequest.toString())));
@@ -344,17 +368,26 @@ public class PineconeDBClient {
      */
     private Request prepareFetchRequest(FetchRequest fetchRequest, String url) {
         try {
+
+            HttpUrl.Builder urlBuilder = HttpUrl.parse(url)
+                    .newBuilder();
+            urlBuilder.addQueryParameter("ids", fetchRequest.getIDsAsString());
+            urlBuilder.addQueryParameter("namespace", fetchRequest.getNameSpace());
+
             Request.Builder builder = new Request.Builder()
-                    .url(url)
+                    .url(urlBuilder.build().toString())
+                    .method("GET", null)
                     .addHeader("accept", "application/json")
                     .addHeader("content-type", "application/json")
-                    .addHeader("Api-Key", apiKey);
+                    .addHeader("Api-Key", apiKey)
+                    .header("ids", fetchRequest.getIDsAsString());
 
             JSONObject json = new JSONObject();
             json.put("namespace", fetchRequest.getNameSpace());
             MediaType mediaType = MediaType.parse("application/json");
 
-            builder.post(RequestBody.create(mediaType, String.valueOf(fetchRequest.toString())));
+//            builder.post(RequestBody.create(mediaType, String.valueOf(fetchRequest.toString())));
+            builder.method("GET", null);
             return builder.build();
 
         } catch (Exception e) {

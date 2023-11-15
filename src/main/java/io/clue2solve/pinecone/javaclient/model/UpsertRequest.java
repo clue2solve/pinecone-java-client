@@ -16,23 +16,25 @@ import java.util.List;
 @AllArgsConstructor
 public class UpsertRequest {
     private String indexName;
-    private String nameSpace;
+    private String namespace;
     private List<UpsertVector> upsertVectorsList;
 
     public JSONObject getRequestAsJson() {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("indexName", this.getIndexName());
-        jsonObject.put("nameSpace", this.getNameSpace());
+        jsonObject.put("nameSpace", this.getNamespace());
         jsonObject.put("vectors", this.getUpsertVectorsList());
 
         return jsonObject;
     }
     public String toString() {
         JSONObject vectorsJson = new JSONObject();
+        vectorsJson.put("indexName", this.getIndexName());
+        vectorsJson.put("namespace", this.getNamespace());
         for (UpsertVector upsertVector : upsertVectorsList) {
             JSONObject vectorJson = new JSONObject();
-            vectorJson.put("nameSpace", this.getNameSpace());
-            vectorJson.put("indexName", this.getIndexName());
+//            vectorJson.put("namespace", this.getNamespace());
+//            vectorJson.put("indexName", this.getIndexName());
             vectorJson.put("id", upsertVector.getId());
             vectorJson.put("values", upsertVector.getValues());
             vectorJson.put("metadata", new JSONObject(upsertVector.getMetadata()));
@@ -41,3 +43,6 @@ public class UpsertRequest {
         return vectorsJson.toString();
     }
 }
+
+
+

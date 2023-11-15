@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class QueryRequest {
     @NonNull
-    private String nameSpace;
+    private String namespace;
     @NonNull
     private String indexName;
     @NonNull
@@ -32,8 +32,8 @@ public class QueryRequest {
      */
     public  JSONObject getRequestAsJson() {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("nameSpace", this.getNameSpace());
-        jsonObject.put("indexName", this.getIndexName());
+        jsonObject.put("namespace", this.getNamespace());
+        jsonObject.put("indexname", this.getIndexName());
         jsonObject.put("includeValues", this.isIncludeValues());
         jsonObject.put("includeMetadata", this.isIncludeMetadata());
         jsonObject.put("top_k", getTop_k());
@@ -50,3 +50,5 @@ public class QueryRequest {
         return this.getRequestAsJson().toString();
     }
 }
+
+

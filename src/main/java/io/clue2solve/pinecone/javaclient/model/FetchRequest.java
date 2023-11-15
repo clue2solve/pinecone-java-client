@@ -28,4 +28,14 @@ public class FetchRequest {
         reqJson.put("ids", this.getIds());
         return reqJson.toString();
     }
+
+
+    //getIDsAsString returns a string of IDs separated by commas
+    public String getIDsAsString() {
+        String idsString = "";
+        for (String id : ids) {
+            idsString += id + ",";
+        }
+        return idsString.substring(0, idsString.length() - 1);
+    }
 }
