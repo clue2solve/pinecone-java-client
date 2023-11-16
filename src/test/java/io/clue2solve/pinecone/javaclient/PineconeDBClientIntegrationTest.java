@@ -147,7 +147,6 @@ public class PineconeDBClientIntegrationTest {
     @Test
     @Order(3)
     public void testDelete() throws IOException {
-            logger.info("Delete Request: " + deleteRequest.toString());
         String response = pineconeDBClient.delete(deleteRequest);
         assertNotNull(response);
         // Add more assertions based on your response
