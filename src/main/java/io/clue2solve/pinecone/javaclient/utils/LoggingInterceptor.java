@@ -25,7 +25,7 @@ public class LoggingInterceptor implements Interceptor {
             // .removeAll("Api-Key") // remove the Api-Key header
             .set("Api-Key", "SNIP") // replace the Api-Key header value with "SNIP"
             .build();
-        logger.info("Sending request: {} on {}\n{}", request.url(), chain.connection(), headers);
+        logger.info("Sending request: {}\n{}", request.url(),  headers);
 
         String requestBody = null;
         if (request.body() != null) {
@@ -41,7 +41,7 @@ public class LoggingInterceptor implements Interceptor {
         Headers responseHeaders = response.headers().newBuilder()
             .removeAll("Api-Key") // remove the Api-Key header
             .build();
-        logger.info("Received response for {} in {:.1f}ms\n{}", response.request().url(), (t2 - t1) / 1e6, responseHeaders);
+        logger.info("Received response for {} in {}ms\n{}", response.request().url(), (t2 - t1)/1000000, responseHeaders);
 
         MediaType contentType = response.body().contentType();
         String content = response.body().string(); // Only read once
