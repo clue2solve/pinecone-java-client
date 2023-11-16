@@ -24,6 +24,10 @@ public class FetchResponse {
     private String sparseValues;
     private String metadata; // this is a stringified JSON object, so you can parse it into a JSON object.
 
+    //toJSONString returns a stringified JSON object
+    public String toJSONString() {
+        return "{\"id\":\"" + id + "\",\"values\":" + values + ",\"nameSpace\":\"" + nameSpace + "\",\"additionalProp\":\"" + additionalProp + "\",\"sparseValues\":\"" + sparseValues + "\",\"metadata\":" + metadata + "}";
+    }
 
 
 }
