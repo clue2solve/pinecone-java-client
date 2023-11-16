@@ -22,7 +22,8 @@ public class LoggingInterceptor implements Interceptor {
 
         long t1 = System.nanoTime();
         Headers headers = request.headers().newBuilder()
-            .removeAll("Api-Key") // remove the Api-Key header
+            // .removeAll("Api-Key") // remove the Api-Key header
+            .set("Api-Key", "SNIP") // replace the Api-Key header value with "SNIP"
             .build();
         logger.info("Sending request: {} on {}\n{}", request.url(), chain.connection(), headers);
 
