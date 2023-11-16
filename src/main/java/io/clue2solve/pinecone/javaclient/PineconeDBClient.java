@@ -5,8 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.clue2solve.pinecone.javaclient.model.*;
-import io.clue2solve.pinecone.javaclient.utils.JsonUtils;
-import io.clue2solve.pinecone.javaclient.utils.LoggingInterceptor;
+import io.clue2solve.pinecone.javaclient.utils.OkHttpLoggingInterceptor;
 import io.clue2solve.pinecone.javaclient.utils.OkHttpClientWrapper;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +32,7 @@ public class PineconeDBClient {
 
     public PineconeDBClient(String environment, String projectId, String apiKey) {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .addInterceptor(new LoggingInterceptor())
+                .addInterceptor(new OkHttpLoggingInterceptor())
                 .build();
         this.client = new OkHttpClientWrapper(okHttpClient);
         this.environment = environment;

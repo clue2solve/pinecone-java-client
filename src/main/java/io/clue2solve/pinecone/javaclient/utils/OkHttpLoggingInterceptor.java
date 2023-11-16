@@ -1,8 +1,5 @@
 package io.clue2solve.pinecone.javaclient.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +10,7 @@ import java.io.IOException;
 /**
  * Interceptor to log the request and response
  */
-public class LoggingInterceptor implements Interceptor {
+public class OkHttpLoggingInterceptor implements Interceptor {
     private static final Logger logger = LoggerFactory.getLogger("okhttp3.OkHttpClient");
 
     @Override
