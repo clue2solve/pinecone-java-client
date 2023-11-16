@@ -1,4 +1,4 @@
-package io.clue2solve.pinecone.javaclient;
+package io.clue2solve.pinecone.javaclient.utils;
 
 import lombok.NoArgsConstructor;
 import okhttp3.Call;

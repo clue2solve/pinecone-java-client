@@ -5,6 +5,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.clue2solve.pinecone.javaclient.model.*;
+import io.clue2solve.pinecone.javaclient.utils.JsonUtils;
+import io.clue2solve.pinecone.javaclient.utils.LoggingInterceptor;
+import io.clue2solve.pinecone.javaclient.utils.OkHttpClientWrapper;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -197,7 +200,6 @@ public class PineconeDBClient {
             match.get("values").forEach(value -> valuesList.add(value.asDouble()));
             queryResponse.setValues(valuesList);
             queryResponse.setMetadata(match.get("metadata").toString());
-            LOG.info("QueryResponse: {}", queryResponse.toString());
             queryResponses.add(queryResponse);
         }
         return queryResponses;
@@ -404,9 +406,7 @@ public class PineconeDBClient {
      * @return URL for the given index and endpoint.
      */
     private String buildUrl(String indexName, String endpoint) {
-        LOG.info("Building URL for index: {} and endpoint: {}", indexName, endpoint);
         String formattedUrl = String.format("https://%s-%s.svc.%s.pinecone.io/%s", indexName, projectId, environment, endpoint);
-        LOG.info("Formatted URL : {} ",formattedUrl);
         return formattedUrl;
     }
 

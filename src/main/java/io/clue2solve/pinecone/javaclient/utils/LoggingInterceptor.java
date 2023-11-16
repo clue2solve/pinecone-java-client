@@ -1,4 +1,4 @@
-package io.clue2solve.pinecone.javaclient;
+package io.clue2solve.pinecone.javaclient.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -24,14 +24,14 @@ public class LoggingInterceptor implements Interceptor {
         Headers headers = request.headers().newBuilder()
             .removeAll("Api-Key") // remove the Api-Key header
             .build();
-        logger.info("Sending request {} on {}\n{}", request.url(), chain.connection(), headers);
+        logger.info("Sending request: {} on {}\n{}", request.url(), chain.connection(), headers);
 
         String requestBody = null;
         if (request.body() != null) {
             Buffer requestBuffer = new Buffer();
             request.body().writeTo(requestBuffer);
             requestBody = requestBuffer.readUtf8();
-            logger.info(requestBody);
+            logger.info("Request Body:\n------\n{}\n------",JsonUtils.toPrettyFormat(requestBody));
         }
 
         Response response = chain.proceed(request);
@@ -44,9 +44,8 @@ public class LoggingInterceptor implements Interceptor {
 
         MediaType contentType = response.body().contentType();
         String content = response.body().string(); // Only read once
-        ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-        String prettyContent = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readValue(content, Object.class));
-        logger.info("Response body: {}", prettyContent);
+
+        logger.info("Response body:\n------\n{}\n------", JsonUtils.toPrettyFormat(content));
 
         ResponseBody wrappedBody = ResponseBody.create(contentType, content);
         //noinspection KotlinInternalInJava
