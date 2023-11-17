@@ -53,14 +53,11 @@ public class PineconeDBClientIntegrationTest {
                 indexName = properties.getProperty("testIndex");
                 nameSpace = properties.getProperty("testNamespace");
             }
-            // Properties properties = new Properties();
-            // properties.load(new FileInputStream("src/test/resources/test.properties"));
-            // String environment = properties.getProperty("testEnvironment");
-            // String projectId = properties.getProperty("testProjectId");
-            // String apiKey = properties.getProperty("testApiKey");
-            // pineconeDBClient = new PineconeDBClient(environment, projectId, apiKey);
-            // indexName = properties.getProperty("testIndex");
-            // nameSpace = properties.getProperty("testNamespace");
+            System.out.println("Environment: " + environment);
+            System.out.println("Project ID: " + projectId);
+            System.out.println("API Key: " + apiKey);
+            System.out.println("Index Name: " + indexName);
+            System.out.println("Namespace: " + nameSpace);
 
             // Initialize pineconeDBClient
             pineconeDBClient = new PineconeDBClient(environment, projectId, apiKey);
