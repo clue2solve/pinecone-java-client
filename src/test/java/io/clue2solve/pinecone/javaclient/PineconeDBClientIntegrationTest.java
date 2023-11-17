@@ -7,8 +7,6 @@ import org.junit.jupiter.api.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,13 +15,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PineconeDBClientIntegrationTest {
 
-    Logger logger = Logger.getLogger(PineconeDBClientIntegrationTest.class.getName());
         String indexName ;
         String nameSpace  ;
         private PineconeDBClient pineconeDBClient;
         private String uuidString;
         private UpsertRequest upsertRequest;
-        private String expectedQueryResponse;
         private String expectedUpsertResponse;
         private QueryRequest queryRequest;
         private DeleteRequest deleteRequest;
@@ -95,7 +91,7 @@ public class PineconeDBClientIntegrationTest {
                 .build();
                 
             // Set expected response
-            expectedQueryResponse = "{\"code\":3,\"message\":\"Vector dimension 2 does not match the dimension of the index 1536\",\"details\":[]}";
+            String expectedQueryResponse = "{\"code\":3,\"message\":\"Vector dimension 2 does not match the dimension of the index 1536\",\"details\":[]}";
             expectedUpsertResponse = "{\"upsertedCount\":1}";
         }
 
@@ -103,13 +99,14 @@ public class PineconeDBClientIntegrationTest {
     @Order(-1)
     public void     testDescribeIndexStats() throws IOException {
         // String indexName = testIndexName; // replace with your test index name
-        Response response = pineconeDBClient.describeIndexStats(indexName);
-        assertEquals(200, response.code());
+        try (Response response = pineconeDBClient.describeIndexStats(indexName)) {
+            assertEquals(200, response.code());
+        }
         // Add more assertions based on your response
     }
     @Test
     @Order(0)
-    public void testUpsert() throws IOException {
+    public void testUpsert() throws Exception {
         String response = pineconeDBClient.upsert(upsertRequest);
         assertNotNull(response);
 
