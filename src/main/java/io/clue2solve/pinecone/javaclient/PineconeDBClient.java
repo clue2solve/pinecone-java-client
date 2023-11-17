@@ -4,18 +4,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.clue2solve.pinecone.javaclient.model.*;
 import io.clue2solve.pinecone.javaclient.utils.OkHttpClientWrapper;
 import io.clue2solve.pinecone.javaclient.utils.OkHttpLoggingInterceptor;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -55,8 +56,7 @@ public class PineconeDBClient {
         String url = buildUrl(indexName, EndPoints.DESCRIBE_INDEX_STATS.toString());
         Request request = prepareRequestWithNoBody(indexName, url);
         try {
-            Response response = client.newCall(request).execute();
-            return response;
+            return client.newCall(request).execute();
         } catch (IOException e) {
             LOG.error("Error fetching index stats for index: {}", indexName, e);
             throw e;
@@ -73,14 +73,14 @@ public class PineconeDBClient {
     public List<QueryResponse> query(QueryRequest queryRequest) throws IOException {
         String url = buildUrl(queryRequest.getIndexName(), EndPoints.QUERY.toString());
         Request request = prepareQueryRequest(queryRequest, url);
-        try {
-            Response response = client.newCall(request).execute();
-            List<QueryResponse> queryResponses = extractQueryResponse(response.body().string());
+
+            List<QueryResponse> queryResponses = null;
+            try (Response response = client.newCall(request).execute()) {
+                if (response.body() != null) {
+                    queryResponses = extractQueryResponse(response.body().string());
+                }
+            }
             return queryResponses;
-        } catch (IOException e) {
-            LOG.error("Error querying index: {}", queryRequest.getIndexName(), e);
-            throw e;
-        }
     }
 
     /**
@@ -94,9 +94,13 @@ public class PineconeDBClient {
         String url = buildUrl(fetchRequest.getIndexName(), EndPoints.FETCH.toString());
         Request request = prepareFetchRequest(fetchRequest, url);
         try {
-            Response response = client.newCall(request).execute();
-            FetchResponse fetchResponse = extractFetchResponse(response.body().string());
-            return fetchResponse;
+            try (Response response = client.newCall(request).execute()) {
+                if (response.body() != null) {
+                    return extractFetchResponse(response.body().string());
+                } else {
+                    return null;
+                }
+            }
         } catch (IOException e) {
             LOG.error("Error fetching vector for ids: {}", fetchRequest.getIds(), e);
             throw e;
@@ -115,11 +119,11 @@ public class PineconeDBClient {
 
         Request request = prepareUpsertRequest(upsertRequest, url);
 
-        try {
-            Response response = client.newCall(request).execute();
-            return response.body().string();
-        } catch (Exception e) {
-            throw e;
+        try (Response response = client.newCall(request).execute()) {
+            if (response.body() != null) {
+                return response.body().string();
+            } else
+                return null;
         }
     }
 
@@ -135,11 +139,13 @@ public class PineconeDBClient {
 
         Request request = preparDeletelRequest(deleteRequest, url);
 
-        try {
-            Response response = client.newCall(request).execute();
-            return response.body().string();
-        } catch (Exception e) {
-            throw e;
+        try (Response response = client.newCall(request).execute()) {
+            if (response.body() != null) {
+                return response.body().string();
+            }
+            else {
+                return null;
+            }
         }
     }
 
@@ -185,10 +191,10 @@ public class PineconeDBClient {
         ObjectMapper objectMapper = new ObjectMapper();
         List<Double> values = null;
         try {
-            values = objectMapper.readValue(valuesJson.toString(), new TypeReference<List<Double>>() {
+            values = objectMapper.readValue(valuesJson.toString(), new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            LOG.error("Error parsing values for id: {}", id, e);
         }
         fetchResponse.setValues(values);
         fetchResponse.setNameSpace(rootNode.get("namespace").toString());
@@ -212,11 +218,12 @@ public class PineconeDBClient {
                     .addHeader("content-type", "application/json")
                     .addHeader("Api-Key", apiKey);
 
-            JSONObject json = new JSONObject();
+            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectNode json = objectMapper.createObjectNode();
             json.put("namespace", indexName);
-            MediaType mediaType = MediaType.parse("application/json");
 
-            builder.post(RequestBody.create(null, new byte[0]));
+
+            builder.post(RequestBody.create(new byte[0], null));
             return builder.build();
 
         } catch (Exception e) {
@@ -241,10 +248,10 @@ public class PineconeDBClient {
                     .addHeader("content-type", "application/json")
                     .addHeader("Api-Key", apiKey);
 
-            JSONObject queryJsonObject = queryRequest.getRequestAsJson();
-            LOG.info("Query JSON: {}", queryJsonObject.toString());
-            RequestBody body = RequestBody.create(MediaType.parse("application/json"),
-                    queryJsonObject.toString());
+            ObjectMapper objectMapper = new ObjectMapper();
+            String queryJsonString = objectMapper.writeValueAsString(queryRequest);
+            LOG.info("Query JSON: {}", queryJsonString);
+            RequestBody body = RequestBody.create(queryJsonString, MediaType.parse("application/json"));
             builder.post(body);
             return builder.build();
 
@@ -270,11 +277,13 @@ public class PineconeDBClient {
                     .addHeader("content-type", "application/json")
                     .addHeader("Api-Key", apiKey);
 
-            JSONObject json = new JSONObject();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectNode json = objectMapper.createObjectNode();
             json.put("namespace", upsertRequest.getNamespace());
             MediaType mediaType = MediaType.parse("application/json");
 
-            builder.post(RequestBody.create(mediaType, String.valueOf(upsertRequest.toString())));
+            builder.post(RequestBody.create(String.valueOf(upsertRequest.toString()), mediaType));
             return builder.build();
 
         } catch (Exception e) {
@@ -285,10 +294,9 @@ public class PineconeDBClient {
 
     /**
      * Prepares a request for the given index and endpoint.
-     *
-     * @param deleteRequest
-     * @param url
-     * @return
+     * @param deleteRequest Request parameters for the delete operation.
+     * @param url URL to be called.
+     * @return Prepared request.
      */
     private Request preparDeletelRequest(DeleteRequest deleteRequest, String url) {
         try {
@@ -297,10 +305,6 @@ public class PineconeDBClient {
                     .addHeader("accept", "application/json")
                     .addHeader("content-type", "application/json")
                     .addHeader("Api-Key", apiKey);
-
-            MediaType mediaType = MediaType.parse("application/json");
-
-            builder.post(RequestBody.create(mediaType, String.valueOf(deleteRequest.toString())));
             return builder.build();
 
         } catch (Exception e) {
@@ -318,26 +322,17 @@ public class PineconeDBClient {
      */
     private Request prepareFetchRequest(FetchRequest fetchRequest, String url) {
         try {
-
-            HttpUrl.Builder urlBuilder = HttpUrl.parse(url)
+            HttpUrl.Builder urlBuilder = Objects.requireNonNull(HttpUrl.parse(url))
                     .newBuilder();
             urlBuilder.addQueryParameter("ids", fetchRequest.getIDsAsString());
             urlBuilder.addQueryParameter("namespace", fetchRequest.getNameSpace());
-
             Request.Builder builder = new Request.Builder()
                     .url(urlBuilder.build().toString())
                     .method("GET", null)
                     .addHeader("accept", "application/json")
                     .addHeader("content-type", "application/json")
-                    .addHeader("Api-Key", apiKey)
-                    .header("ids", fetchRequest.getIDsAsString());
+                    .addHeader("Api-Key", apiKey);
 
-            JSONObject json = new JSONObject();
-            json.put("namespace", fetchRequest.getNameSpace());
-            MediaType mediaType = MediaType.parse("application/json");
-
-//            builder.post(RequestBody.create(mediaType, String.valueOf(fetchRequest.toString())));
-            builder.method("GET", null);
             return builder.build();
 
         } catch (Exception e) {
@@ -354,8 +349,7 @@ public class PineconeDBClient {
      * @return URL for the given index and endpoint.
      */
     private String buildUrl(String indexName, String endpoint) {
-        String formattedUrl = String.format("https://%s-%s.svc.%s.pinecone.io/%s", indexName, projectId, environment, endpoint);
-        return formattedUrl;
+        return String.format("https://%s-%s.svc.%s.pinecone.io/%s", indexName, projectId, environment, endpoint);
     }
 
     /**
