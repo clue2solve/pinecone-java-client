@@ -10,6 +10,8 @@ public class JsonUtils {
     private static final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
     public static String toPrettyFormat(String jsonString) {
+        if (jsonString.isEmpty()) return "";
+
         try {
             Object json = mapper.readValue(jsonString, Object.class);
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
