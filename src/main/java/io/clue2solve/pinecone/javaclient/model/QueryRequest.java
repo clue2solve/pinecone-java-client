@@ -1,9 +1,11 @@
 package io.clue2solve.pinecone.javaclient.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
-import org.json.JSONObject;
-
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class is used to create a JSON object for the request body of the query API.
@@ -24,23 +26,27 @@ QueryRequest {
     private List<Double> vector;
     private boolean includeMetadata;
     private boolean includeValues;
-    @NonNull
     private int top_k = 10;
 
     /**
      * This method is used to create a JSON object from the QueryRequest object.
      * @return JSONObject
      */
-    public  JSONObject getRequestAsJson() {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("namespace", this.getNamespace());
-        jsonObject.put("indexname", this.getIndexName());
-        jsonObject.put("includeValues", this.isIncludeValues());
-        jsonObject.put("includeMetadata", this.isIncludeMetadata());
-        jsonObject.put("top_k", getTop_k());
-        jsonObject.put("vector", this.getVector());
+    public String getRequestAsJson() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> map = new HashMap<>();
+        map.put("namespace", this.getNamespace());
+        map.put("indexname", this.getIndexName());
+        map.put("includeValues", this.isIncludeValues());
+        map.put("includeMetadata", this.isIncludeMetadata());
+        map.put("top_k", getTop_k());
+        map.put("vector", this.getVector());
 
-        return jsonObject;
+        try {
+            return objectMapper.writeValueAsString(map);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -49,7 +55,7 @@ QueryRequest {
      */
     @Override
     public  String toString() {
-        return this.getRequestAsJson().toString();
+        return this.getRequestAsJson();
     }
 }
 
