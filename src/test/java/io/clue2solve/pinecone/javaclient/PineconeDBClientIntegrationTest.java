@@ -98,7 +98,6 @@ public class PineconeDBClientIntegrationTest {
     @Test
     @Order(-1)
     public void     testDescribeIndexStats() throws IOException {
-        // String indexName = testIndexName; // replace with your test index name
         try (Response response = pineconeDBClient.describeIndexStats(indexName)) {
             assertEquals(200, response.code());
         }
