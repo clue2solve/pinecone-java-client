@@ -14,7 +14,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import java.io.IOException;
-import java.util.Properties;
 
 public class PineconeIndexClient {
     private final OkHttpClientWrapper client;
@@ -22,7 +21,7 @@ public class PineconeIndexClient {
     private final String baseUrl;
     private final String collectionsBaseURL = "https://controller.us-west4-gcp.pinecone.io/collections";
 
-    private String apiKey;
+    private final String apiKey;
 
     public PineconeIndexClient(String environment, String apiKey) {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
@@ -41,14 +40,19 @@ public class PineconeIndexClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            if (response.body() != null) {
+                return response.body().string();
+            }
+            else {
+                return null;
+            }
         }
     }
 
      public String createIndex(CreateIndexRequest createIndexRequest) throws IOException {
         MediaType mediaType = MediaType.parse("application/json");
         String json = objectMapper.writeValueAsString(createIndexRequest);
-        RequestBody body = RequestBody.create(mediaType, json);
+        RequestBody body = RequestBody.create(json, mediaType);
 
         Request request = new Request.Builder()
                 .url(baseUrl)
@@ -59,7 +63,12 @@ public class PineconeIndexClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            if (response.body() != null) {
+                return response.body().string();
+            }else {
+                return null;
+            }
+
         }
     }
 
@@ -72,7 +81,12 @@ public class PineconeIndexClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            if (response.body() != null) {
+                return response.body().string();
+            }
+            else {
+                return null;
+            }
         }
     }
 
@@ -85,14 +99,19 @@ public class PineconeIndexClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            if (response.body() != null) {
+                return response.body().string();
+            }
+            else {
+                return null;
+            }
         }
     }
 
     public String configureIndex(String indexName, ConfigureIndexRequest configureIndexRequest) throws IOException {
         MediaType mediaType = MediaType.parse("application/json");
         String json = objectMapper.writeValueAsString(configureIndexRequest);
-        RequestBody body = RequestBody.create(mediaType, json);
+        RequestBody body = RequestBody.create(json, mediaType);
 
         Request request = new Request.Builder()
                 .url(baseUrl + "/" + indexName)
@@ -106,7 +125,12 @@ public class PineconeIndexClient {
             //TODO: Handle error conditions like reaching the limit on resources : The index exceeds the project quota of 2 pods by 2 pods.
             //  or : Upgrade your account or change the project settings to increase the quota. or even the number of indexes.
             // or : updating base pod type is not supported
-            return response.body().string();
+            if (response.body() != null) {
+                return response.body().string();
+            }
+            else {
+                return null;
+            }
         }
     }
 
@@ -119,14 +143,19 @@ public class PineconeIndexClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            if (response.body() != null) {
+                return response.body().string();
+            }
+            else {
+                return null;
+            }
         }
     }
 
     public String createCollection(CreateCollectionRequest createCollectionRequest) throws IOException {
         MediaType mediaType = MediaType.parse("application/json");
         String json = objectMapper.writeValueAsString(createCollectionRequest);
-        RequestBody body = RequestBody.create(mediaType, json);
+        RequestBody body = RequestBody.create(json, mediaType);
 
         Request request = new Request.Builder()
                 .url(collectionsBaseURL)
@@ -137,7 +166,12 @@ public class PineconeIndexClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            if (response.body() != null) {
+                return response.body().string();
+            }
+            else {
+                return null;
+            }
         }
     }
 
@@ -150,7 +184,12 @@ public class PineconeIndexClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            if (response.body() != null) {
+                return response.body().string();
+            }
+            else {
+                return null;
+            }
         }
     }
 
@@ -163,7 +202,12 @@ public class PineconeIndexClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            if (response.body() != null) {
+                return response.body().string();
+            }
+            else {
+                return null;
+            }
         }
     }
 
