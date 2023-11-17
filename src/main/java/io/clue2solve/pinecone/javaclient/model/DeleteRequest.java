@@ -1,7 +1,11 @@
 package io.clue2solve.pinecone.javaclient.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
-import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class is used to create a DeleteRequest object, which is then used to create a JSON object
@@ -26,14 +30,21 @@ public class DeleteRequest {
      * This method is used to create a JSON object from the DeleteRequest object.
      * @return JSONObject Stringified JSON object.
      */
+    @Override
     public String toString() {
-        //return a JSON String lile this : {\"deleteAll\":\"false\",\"ids\":[\"abcd1234\"],\"namespace\":\"default\"}
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("indexName", this.getIndexName()); // Delete works on namespace level, not index level
-        jsonObject.put("namespace", this.getNamespace());
-        //jsonObject.put("deleteAll", this.isDeleteAll()); // not supported for GCP Starter environments, thus not supported here
-        jsonObject.put("ids", this.getIds());
-        return jsonObject.toString();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> map = new HashMap<>();
+        map.put("indexName", this.getIndexName());
+        map.put("namespace", this.getNamespace());
+        map.put("ids", this.getIds());
+        try {
+            return objectMapper.writeValueAsString(map);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
+
+
+
 
 }

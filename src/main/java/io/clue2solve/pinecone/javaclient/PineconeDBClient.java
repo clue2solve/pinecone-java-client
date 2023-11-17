@@ -162,17 +162,20 @@ public class PineconeDBClient {
         JsonNode rootNode = mapper.readTree(jsonResponseString);
         List<QueryResponse> queryResponses = new ArrayList<>();
         JsonNode matches = rootNode.get("matches");
-        for (JsonNode match : matches) {
-            QueryResponse queryResponse = new QueryResponse();
+        if (matches != null && matches.isArray()) {
 
-            queryResponse.setId(UUID.fromString(match.get("id").asText()));
-            queryResponse.setScore(match.get("score").asDouble());
+            for (JsonNode match : matches) {
+                QueryResponse queryResponse = new QueryResponse();
 
-            List<Double> valuesList = new ArrayList<>();
-            match.get("values").forEach(value -> valuesList.add(value.asDouble()));
-            queryResponse.setValues(valuesList);
-            queryResponse.setMetadata(match.get("metadata").toString());
-            queryResponses.add(queryResponse);
+                queryResponse.setId(UUID.fromString(match.get("id").asText()));
+                queryResponse.setScore(match.get("score").asDouble());
+
+                List<Double> valuesList = new ArrayList<>();
+                match.get("values").forEach(value -> valuesList.add(value.asDouble()));
+                queryResponse.setValues(valuesList);
+                queryResponse.setMetadata(match.get("metadata").toString());
+                queryResponses.add(queryResponse);
+            }
         }
         return queryResponses;
     }

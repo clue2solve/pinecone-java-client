@@ -72,7 +72,7 @@ public class PineconeDBClientIntegrationTest {
                 .top_k(10)
                 .includeMetadata(true)
                 .includeValues(true)
-                .queryVector(Arrays.asList(0.94, 0.69, 0.23))
+                .vector(Arrays.asList(0.94, 0.69, 0.23))
                 .build();
 
             //Create a Fetch Request with the values above

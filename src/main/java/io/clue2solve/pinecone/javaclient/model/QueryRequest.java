@@ -14,13 +14,14 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QueryRequest {
+public class
+QueryRequest {
     @NonNull
     private String namespace;
     @NonNull
     private String indexName;
     @NonNull
-    private List<Double> queryVector;
+    private List<Double> vector;
     private boolean includeMetadata;
     private boolean includeValues;
     @NonNull
@@ -37,7 +38,7 @@ public class QueryRequest {
         jsonObject.put("includeValues", this.isIncludeValues());
         jsonObject.put("includeMetadata", this.isIncludeMetadata());
         jsonObject.put("top_k", getTop_k());
-        jsonObject.put("vector", this.getQueryVector());
+        jsonObject.put("vector", this.getVector());
 
         return jsonObject;
     }
@@ -46,6 +47,7 @@ public class QueryRequest {
      * This method is used to convert the JSON object to a string.
      * @return JSONObject Stringified JSON object.
      */
+    @Override
     public  String toString() {
         return this.getRequestAsJson().toString();
     }

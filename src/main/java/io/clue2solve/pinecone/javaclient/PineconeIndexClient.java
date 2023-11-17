@@ -1,17 +1,12 @@
 package io.clue2solve.pinecone.javaclient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.clue2solve.pinecone.javaclient.model.ConfigureIndexRequest;
 import io.clue2solve.pinecone.javaclient.model.CreateCollectionRequest;
 import io.clue2solve.pinecone.javaclient.model.CreateIndexRequest;
 import io.clue2solve.pinecone.javaclient.utils.OkHttpClientWrapper;
 import io.clue2solve.pinecone.javaclient.utils.OkHttpLoggingInterceptor;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
 
 import java.io.IOException;
 
@@ -20,7 +15,6 @@ public class PineconeIndexClient {
     private final ObjectMapper objectMapper;
     private final String baseUrl;
     private final String collectionsBaseURL = "https://controller.us-west4-gcp.pinecone.io/collections";
-
     private final String apiKey;
 
     public PineconeIndexClient(String environment, String apiKey) {
@@ -34,183 +28,92 @@ public class PineconeIndexClient {
     }
 
     public String listIndexes() throws IOException {
-        Request request = new Request.Builder()
+        return executeRequest(new Request.Builder()
                 .url(baseUrl)
                 .addHeader("Api-Key", apiKey)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.body() != null) {
-                return response.body().string();
-            }
-            else {
-                return null;
-            }
-        }
+                .build());
     }
 
-     public String createIndex(CreateIndexRequest createIndexRequest) throws IOException {
-        MediaType mediaType = MediaType.parse("application/json");
-        String json = objectMapper.writeValueAsString(createIndexRequest);
-        RequestBody body = RequestBody.create(json, mediaType);
-
-        Request request = new Request.Builder()
-                .url(baseUrl)
-                .post(body)
-                .addHeader("accept", "text/plain")
-                .addHeader("content-type", "application/json")
-                .addHeader("Api-Key", apiKey)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.body() != null) {
-                return response.body().string();
-            }else {
-                return null;
-            }
-
-        }
+    public String createIndex(CreateIndexRequest createIndexRequest) throws IOException {
+        return executeRequest(createJsonRequest(createIndexRequest, baseUrl, "POST"));
     }
 
     public String deleteIndex(String indexName) throws IOException {
-        Request request = new Request.Builder()
+        return executeRequest(new Request.Builder()
                 .url(baseUrl + "/" + indexName)
                 .delete()
-                .addHeader("accept", "text/plain")
                 .addHeader("Api-Key", apiKey)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.body() != null) {
-                return response.body().string();
-            }
-            else {
-                return null;
-            }
-        }
+                .build());
     }
 
     public String describeIndex(String indexName) throws IOException {
-        Request request = new Request.Builder()
+        return executeRequest(new Request.Builder()
                 .url(baseUrl + "/" + indexName)
-                .get()
-                .addHeader("accept", "application/json")
                 .addHeader("Api-Key", apiKey)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.body() != null) {
-                return response.body().string();
-            }
-            else {
-                return null;
-            }
-        }
+                .build());
     }
 
     public String configureIndex(String indexName, ConfigureIndexRequest configureIndexRequest) throws IOException {
-        MediaType mediaType = MediaType.parse("application/json");
-        String json = objectMapper.writeValueAsString(configureIndexRequest);
-        RequestBody body = RequestBody.create(json, mediaType);
-
-        Request request = new Request.Builder()
-                .url(baseUrl + "/" + indexName)
-                .patch(body)
-                .addHeader("accept", "text/plain")
-                .addHeader("content-type", "application/json")
-                .addHeader("Api-Key", apiKey)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            //TODO: Handle error conditions like reaching the limit on resources : The index exceeds the project quota of 2 pods by 2 pods.
-            //  or : Upgrade your account or change the project settings to increase the quota. or even the number of indexes.
-            // or : updating base pod type is not supported
-            if (response.body() != null) {
-                return response.body().string();
-            }
-            else {
-                return null;
-            }
-        }
+        return executeRequest(createJsonRequest(configureIndexRequest, baseUrl + "/" + indexName, "PATCH"));
     }
 
     public String listCollections() throws IOException {
-        Request request = new Request.Builder()
+        return executeRequest(new Request.Builder()
                 .url(collectionsBaseURL)
-                .get()
-                .addHeader("accept", "application/json; charset=utf-8")
                 .addHeader("Api-Key", apiKey)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.body() != null) {
-                return response.body().string();
-            }
-            else {
-                return null;
-            }
-        }
+                .build());
     }
 
     public String createCollection(CreateCollectionRequest createCollectionRequest) throws IOException {
-        MediaType mediaType = MediaType.parse("application/json");
-        String json = objectMapper.writeValueAsString(createCollectionRequest);
-        RequestBody body = RequestBody.create(json, mediaType);
-
-        Request request = new Request.Builder()
-                .url(collectionsBaseURL)
-                .post(body)
-                .addHeader("accept", "text/plain")
-                .addHeader("content-type", "application/json")
-                .addHeader("Api-Key", apiKey)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.body() != null) {
-                return response.body().string();
-            }
-            else {
-                return null;
-            }
-        }
+        return executeRequest(createJsonRequest(createCollectionRequest, collectionsBaseURL, "POST"));
     }
 
     public String describeCollection(String collectionName) throws IOException {
-        Request request = new Request.Builder()
+        return executeRequest(new Request.Builder()
                 .url(collectionsBaseURL + "/" + collectionName)
-                .get()
-                .addHeader("accept", "application/json")
                 .addHeader("Api-Key", apiKey)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.body() != null) {
-                return response.body().string();
-            }
-            else {
-                return null;
-            }
-        }
+                .build());
     }
 
     public String deleteCollection(String collectionName) throws IOException {
-        Request request = new Request.Builder()
+        return executeRequest(new Request.Builder()
                 .url(collectionsBaseURL + "/" + collectionName)
                 .delete()
-                .addHeader("accept", "text/plain")
                 .addHeader("Api-Key", apiKey)
-                .build();
+                .build());
+    }
 
+    private String executeRequest(Request request) throws IOException {
         try (Response response = client.newCall(request).execute()) {
-            if (response.body() != null) {
-                return response.body().string();
-            }
-            else {
-                return null;
-            }
+            return response.body() != null ? response.body().string() : null;
         }
     }
 
+    private Request createJsonRequest(Object requestObject, String url, String method) throws IOException {
+        MediaType mediaType = MediaType.parse("application/json");
+        String json = objectMapper.writeValueAsString(requestObject);
+        RequestBody body = RequestBody.create(json, mediaType);
+
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url)
+                .addHeader("accept", "text/plain")
+                .addHeader("content-type", "application/json")
+                .addHeader("Api-Key", apiKey);
+
+        switch (method.toUpperCase()) {
+            case "POST":
+                requestBuilder.post(body);
+                break;
+            case "PATCH":
+                requestBuilder.patch(body);
+                break;
+            case "PUT":
+                requestBuilder.put(body);
+                break;
+            // Add other HTTP methods as needed
+        }
+        return requestBuilder.build();
+    }
 
     // Add other methods for managing indexes here
 }

@@ -6,7 +6,6 @@ import io.clue2solve.pinecone.javaclient.model.CreateIndexRequest;
 
 import java.util.Properties;
 import java.io.InputStream;
-import java.io.FileInputStream;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.*;
 
@@ -39,7 +38,6 @@ public class PineconeIndexClientIT {
     @Test
     @Order(1)
     public void testCreateIndex() throws Exception {
-        CreateIndexRequest request = new CreateIndexRequest();
         // Set the properties of the request...
         CreateIndexRequest createIndexRequest = CreateIndexRequest.builder()
                 .name("test-index")
@@ -52,6 +50,7 @@ public class PineconeIndexClientIT {
                 .build();
 
         String response = client.createIndex(createIndexRequest);
+        //use the response to assert that the index was created successfully
 
         // Assert that the response is as expected...
     }
