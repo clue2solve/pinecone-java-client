@@ -74,18 +74,6 @@
             <artifactId>maven-javadoc-plugin</artifactId>
             <version>3.6.0</version>
         </dependency>
-<!--            <dependency>-->
-<!--                <groupId>junit</groupId>-->
-<!--                <artifactId>junit</artifactId>-->
-<!--                <version>4.13.2</version>-->
-<!--                <scope>test</scope>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>org.mockito</groupId>-->
-<!--                <artifactId>mockito-core</artifactId>-->
-<!--                <version>3.12.4</version>-->
-<!--                <scope>test</scope>-->
-<!--            </dependency>-->
     </dependencies>
 
     <build>
@@ -97,10 +85,11 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
+                    <skip>false</skip>
+                    <doclint>none</doclint>
+                    <additionalOptions>-Xdoclint:all -Xdoclint:-missing</additionalOptions>
                     <!-- Default configuration for all reports -->
                     <failOnError>false</failOnError>
-
-                    <destDir>${basedir}/docs</destDir>
                 </configuration>
                 <executions>
                     <execution>

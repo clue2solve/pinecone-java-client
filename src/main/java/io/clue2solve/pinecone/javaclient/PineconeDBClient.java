@@ -31,6 +31,13 @@ public class PineconeDBClient {
     private final String projectId;
     private final String apiKey;
 
+    /**
+     * Constructor for PineconeDBClient.
+     *
+     * @param environment Environment to be used for the client.
+     * @param projectId   Project ID to be used for the client.
+     * @param apiKey      API key to be used for the client.
+     */
     public PineconeDBClient(String environment, String projectId, String apiKey) {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .addInterceptor(new OkHttpLoggingInterceptor())
@@ -41,6 +48,10 @@ public class PineconeDBClient {
         this.apiKey = apiKey;
     }
 
+    /** Constructor for PineconeDBClient.
+     *
+     * @param client OkHttpClientWrapper to be used for the client.
+     */
     public void setClient(OkHttpClientWrapper client) {
         this.client = client;
     }

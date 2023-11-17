@@ -5,6 +5,7 @@ import io.clue2solve.pinecone.javaclient.model.CreateCollectionRequest;
 import io.clue2solve.pinecone.javaclient.model.CreateIndexRequest;
 
 import java.util.Properties;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.*;
@@ -13,15 +14,32 @@ import org.junit.jupiter.api.*;
 public class PineconeIndexClientIT {
     private PineconeIndexClient client;
     Properties properties;
+    String environment;
+    String projectId;
+    String apiKey;
+    String indexName;
+    String nameSpace;
     @BeforeEach
     public void setup() throws Exception {
-        properties = new Properties();
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("test.properties")) {
-            properties.load(input);
-        }
 
-        String environment = properties.getProperty("testEnvironment");
-        String apiKey = properties.getProperty("testApiKey");
+    // Check if a specific environment variable is set
+    if (System.getenv("GITHUB_ACTIONS") != null) {
+        // We're running in GitHub Actions, use environment variables
+        environment = System.getenv("TEST_ENVIRONMENT");
+        projectId = System.getenv("TEST_PROJECT_ID");
+        apiKey = System.getenv("TEST_API_KEY");
+        indexName = System.getenv("TEST_INDEX");
+        nameSpace = System.getenv("TEST_NAMESPACE");
+    } else {
+        // We're running locally, use properties file
+        Properties properties = new Properties();
+        properties.load(new FileInputStream("src/test/resources/test.properties"));
+        environment = properties.getProperty("testEnvironment");
+        projectId = properties.getProperty("testProjectId");
+        apiKey = properties.getProperty("testApiKey");
+        indexName = properties.getProperty("testIndex");
+        nameSpace = properties.getProperty("testNamespace");
+    }
         client = new PineconeIndexClient(environment, apiKey);
     }
 
@@ -31,7 +49,7 @@ public class PineconeIndexClientIT {
         String indexes = client.listIndexes();
 
         // Assert that the response contains the expected index
-        String testIndex = properties.getProperty("testIndex");
+        String testIndex = this.indexName;
         assertTrue(indexes.contains(testIndex));
     }
 

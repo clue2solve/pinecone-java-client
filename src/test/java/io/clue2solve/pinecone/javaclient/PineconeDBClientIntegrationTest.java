@@ -28,15 +28,42 @@ public class PineconeDBClientIntegrationTest {
 
         @BeforeEach
         public void setUp() throws IOException {
-            Properties properties = new Properties();
-            properties.load(new FileInputStream("src/test/resources/test.properties"));
-            String environment = properties.getProperty("testEnvironment");
-            String projectId = properties.getProperty("testProjectId");
-            String apiKey = properties.getProperty("testApiKey");
-            pineconeDBClient = new PineconeDBClient(environment, projectId, apiKey);
-            indexName = properties.getProperty("testIndex");
-            nameSpace = properties.getProperty("testNamespace");
 
+            String environment;
+            String projectId;
+            String apiKey;
+            String indexName;
+            String nameSpace;
+        
+            // Check if a specific environment variable is set
+            if (System.getenv("GITHUB_ACTIONS") != null) {
+                // We're running in GitHub Actions, use environment variables
+                environment = System.getenv("TEST_ENVIRONMENT");
+                projectId = System.getenv("TEST_PROJECT_ID");
+                apiKey = System.getenv("TEST_API_KEY");
+                indexName = System.getenv("TEST_INDEX");
+                nameSpace = System.getenv("TEST_NAMESPACE");
+            } else {
+                // We're running locally, use properties file
+                Properties properties = new Properties();
+                properties.load(new FileInputStream("src/test/resources/test.properties"));
+                environment = properties.getProperty("testEnvironment");
+                projectId = properties.getProperty("testProjectId");
+                apiKey = properties.getProperty("testApiKey");
+                indexName = properties.getProperty("testIndex");
+                nameSpace = properties.getProperty("testNamespace");
+            }
+            // Properties properties = new Properties();
+            // properties.load(new FileInputStream("src/test/resources/test.properties"));
+            // String environment = properties.getProperty("testEnvironment");
+            // String projectId = properties.getProperty("testProjectId");
+            // String apiKey = properties.getProperty("testApiKey");
+            // pineconeDBClient = new PineconeDBClient(environment, projectId, apiKey);
+            // indexName = properties.getProperty("testIndex");
+            // nameSpace = properties.getProperty("testNamespace");
+
+            // Initialize pineconeDBClient
+            pineconeDBClient = new PineconeDBClient(environment, projectId, apiKey);
 
             // Generate a UUID and convert it to a string
             uuidString = UUID.fromString("b1ce7f35-41fc-4159-a9ab-a24c4de2abcd").toString();
