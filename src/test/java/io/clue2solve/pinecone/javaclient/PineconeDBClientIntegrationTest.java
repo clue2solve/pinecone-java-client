@@ -60,8 +60,11 @@ public class PineconeDBClientIntegrationTest {
             System.out.println("Namespace: " + nameSpace);
 
             // Initialize pineconeDBClient
-            pineconeDBClient = new PineconeDBClient(environment, projectId, apiKey);
-
+            try {
+                pineconeDBClient = new PineconeDBClient(environment, projectId, apiKey);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             // Generate a UUID and convert it to a string
             uuidString = UUID.fromString("b1ce7f35-41fc-4159-a9ab-a24c4de2abcd").toString();
     
