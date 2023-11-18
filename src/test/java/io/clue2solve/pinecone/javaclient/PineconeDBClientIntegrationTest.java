@@ -24,16 +24,15 @@ public class PineconeDBClientIntegrationTest {
         private QueryRequest queryRequest;
         private DeleteRequest deleteRequest;
         private FetchRequest fetchRequest;
+        private String environment;
+        private String projectId;
+        private String apiKey;
 
 
         @BeforeEach
         public void setUp() throws IOException {
 
-            String environment;
-            String projectId;
-            String apiKey;
-            String indexName;
-            String nameSpace;
+
         
             // Check if a specific environment variable is set
             if (System.getenv("GITHUB_ACTIONS") != null) {
@@ -53,18 +52,10 @@ public class PineconeDBClientIntegrationTest {
                 indexName = properties.getProperty("testIndex");
                 nameSpace = properties.getProperty("testNamespace");
             }
-            System.out.println("Environment: " + environment);
-            System.out.println("Project ID: " + projectId);
-            System.out.println("API Key: " + apiKey);
-            System.out.println("Index Name: " + indexName);
-            System.out.println("Namespace: " + nameSpace);
 
             // Initialize pineconeDBClient
-            try {
                 pineconeDBClient = new PineconeDBClient(environment, projectId, apiKey);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
             // Generate a UUID and convert it to a string
             uuidString = UUID.fromString("b1ce7f35-41fc-4159-a9ab-a24c4de2abcd").toString();
     
@@ -124,7 +115,7 @@ public class PineconeDBClientIntegrationTest {
 
     @Test
     @Order(-1)
-    public void     testDescribeIndexStats() throws IOException {
+    public void testDescribeIndexStats() throws IOException {
         try (Response response = pineconeDBClient.describeIndexStats(indexName)) {
             assertEquals(200, response.code());
         }

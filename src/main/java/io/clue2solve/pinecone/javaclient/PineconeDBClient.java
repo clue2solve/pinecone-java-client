@@ -225,6 +225,7 @@ public class PineconeDBClient {
      */
     @NotNull
     private Request prepareRequestWithNoBody(String indexName, String url) {
+
         try {
             Request.Builder builder = new Request.Builder()
                     .url(url)
@@ -232,9 +233,11 @@ public class PineconeDBClient {
                     .addHeader("content-type", "application/json")
                     .addHeader("Api-Key", apiKey);
 
+
             ObjectMapper objectMapper = new ObjectMapper();
             ObjectNode json = objectMapper.createObjectNode();
             json.put("namespace", indexName);
+            json.put("indexname", indexName);
 
 
             builder.post(RequestBody.create(new byte[0], null));
