@@ -3,24 +3,37 @@
 ### Overview
 The Pinecone Java Client is an unofficial Java library for interacting with PineconeDB, a vector database ideal for building vector search applications. This client library facilitates operations such as fetching index statistics, querying, and performing upsert and delete operations in PineconeDB.
 
-### Features
+In addition to these vector operations, the Pinecone Java Client also provides an Index Client for managing indices in PineconeDB. The Index Client allows you to create, delete, and list indices, as well as manage collections within those indices. This makes it easy to organize your data in PineconeDB and perform operations on specific subsets of your data.
+
+
+
+### Vector Operation Features
 - Fetch index statistics
 - Vector Query operations
 - Vector Upsert operations
 - Vector Delete operations
 - Vector Fetch operations
+- Vector Update operations
+
+### Index Operation/Management
+- Create new indices
+- List all indices
+- Delete existing indices
+- Manage collections within indices
+
 
 
 ### Installation
-Include the following dependency in your project's build file:
+## Installation
+The Pinecone Java Client is now hosted on Maven Central. Include the following dependency in your project's build file:
 
 ```XML
-    <!-- Add dependency for Pinecone Java Client -->
-    <dependency>
-        <groupId>io.clue2solve</groupId>
-        <artifactId>pinecone-javaclient</artifactId>
-        <version>1.0.0</version>
-    </dependency>
+<!-- https://mavenlibs.com/maven/dependency/io.clue2solve/pinecone-java-client -->
+<dependency>
+    <groupId>io.clue2solve</groupId>
+    <artifactId>pinecone-java-client</artifactId>
+    <version>0.1</version>
+</dependency>
 ```
 
 ### Usage
@@ -162,6 +175,32 @@ Usage:
 FetchResponse fetchResponse = /* response from fetch operation */;
 ```
 ----
+#### Index Client Usage
+The Index Client is a part of the Pinecone Java Client that provides methods for managing indices in PineconeDB. It allows you to create, delete, and list indices, as well as manage collections within those indices.
+
+Here's an example of how to use it:
+
+```java
+IndexClient indexClient = new IndexClient("environment", "projectId", "apiKey");
+
+// Create an index
+indexClient.createIndex("indexName");
+
+// List all indices
+List<String> indices = indexClient.listIndices();
+
+// Delete an index
+indexClient.deleteIndex("indexName");
+
+// Create a collection within an index
+indexClient.createCollection("indexName", "collectionName");
+
+// List all collections within an index
+List<String> collections = indexClient.listCollections("indexName");
+
+// Delete a collection within an index
+indexClient.deleteCollection("indexName", "collectionName");
+```
 
 ### Roadmap
 The Roadmap is currently in the form of issues for this repository. Will move to more formal backlog management tools in the future.
