@@ -187,7 +187,7 @@ IndexClient indexClient = new IndexClient("environment", "projectId", "apiKey");
 indexClient.createIndex("indexName");
 
 // List all indices
-List<String> indices = indexClient.listIndices();
+List<String> indices = indexClient.listIndexes();
 
 // Delete an index
 indexClient.deleteIndex("indexName");
