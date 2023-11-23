@@ -6,7 +6,7 @@
 
     <groupId>io.clue2solve</groupId>
     <artifactId>pinecone-java-client</artifactId>
-    <version>0.1</version>
+    <version>1.0.0</version>
     <name>Pinecone Java Client</name>
     <description>This is a Java client for the Pinecone service.</description>
     <url>http://github.com/clue2solve/pinecone-java-client</url>
